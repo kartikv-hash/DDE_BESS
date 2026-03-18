@@ -365,1765 +365,1453 @@ CAD_HTML=r"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>BESS Site Plan Designer — SunStripe Template</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BESS Site Plan Designer</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-:root{
-  --bg:#1a1d23;--bg2:#22262f;--bg3:#2a2f3a;--border:rgba(255,255,255,0.08);
-  --accent:#e8a020;--text:#d0d4dc;--text2:#7a8090;--red:#e02020;
-  --sheet:#ffffff;--grid:#e8edf2;--grid2:#cdd5dd;
-}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:'Courier New',monospace;height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:12px;}
+/* ═══════════════ RESET & BASE ═══════════════ */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Courier New',monospace;background:#1c1e24;color:#c8cbd4;height:100vh;overflow:hidden;display:flex;flex-direction:column;font-size:12px}
 
-/* TOOLBAR */
-#toolbar{height:38px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:2px;padding:0 8px;flex-shrink:0;user-select:none;}
-.tb-group{display:flex;align-items:center;gap:2px;padding:0 4px;border-right:1px solid var(--border);}
-.tb-btn{height:26px;padding:0 8px;border-radius:3px;font-size:10px;font-weight:600;cursor:pointer;color:var(--text2);background:transparent;border:1px solid transparent;font-family:'Courier New',monospace;transition:all 0.12s;white-space:nowrap;letter-spacing:0.03em;}
-.tb-btn:hover{background:var(--bg3);color:var(--text);border-color:var(--border);}
-.tb-btn.active{background:rgba(232,160,32,0.15);color:var(--accent);border-color:rgba(232,160,32,0.4);}
-.tb-btn.export{color:#4db8ff;border-color:rgba(77,184,255,0.3);}
-.tb-btn.export:hover{background:rgba(77,184,255,0.1);}
-.tb-btn.export-dwg{color:#ff9d4d;border-color:rgba(255,157,77,0.3);}
-.tb-btn.export-dwg:hover{background:rgba(255,157,77,0.1);}
-.tb-btn.export-pdf{color:#ff6b6b;border-color:rgba(255,107,107,0.3);}
-.tb-btn.export-pdf:hover{background:rgba(255,107,107,0.1);}
-.tb-sep{width:1px;height:20px;background:var(--border);margin:0 2px;}
-#snap-indicator{font-size:9px;color:var(--accent);font-family:'Courier New',monospace;margin-left:4px;}
-#coord-display{font-family:'Courier New',monospace;font-size:10px;color:var(--text2);margin-left:auto;padding-right:8px;}
+/* ═══════════════ TOPBAR ═══════════════ */
+#topbar{height:36px;background:#12141a;border-bottom:1px solid #2a2d35;display:flex;align-items:center;gap:0;flex-shrink:0;user-select:none;padding:0 6px;gap:3px}
+.btn{height:24px;padding:0 9px;border-radius:3px;font-size:10px;font-weight:700;cursor:pointer;color:#8a8f9e;background:transparent;border:1px solid #2a2d35;font-family:'Courier New',monospace;transition:all .12s;white-space:nowrap;letter-spacing:.04em}
+.btn:hover{background:#22252e;color:#c8cbd4;border-color:#3a3d48}
+.btn.on{background:rgba(0,160,255,.15);color:#00a0ff;border-color:rgba(0,160,255,.4)}
+.btn.svg-btn{color:#44cc88;border-color:rgba(68,204,136,.35)}
+.btn.svg-btn:hover{background:rgba(68,204,136,.1)}
+.btn.dxf-btn{color:#ffaa33;border-color:rgba(255,170,51,.35)}
+.btn.dxf-btn:hover{background:rgba(255,170,51,.1)}
+.btn.pdf-btn{color:#ff5566;border-color:rgba(255,85,102,.35)}
+.btn.pdf-btn:hover{background:rgba(255,85,102,.1)}
+.btn.clr-btn{color:#ff4455;border-color:rgba(255,68,85,.35)}
+.vsep{width:1px;height:20px;background:#2a2d35;margin:0 3px;flex-shrink:0}
+#coord{font-family:'Courier New',monospace;font-size:10px;color:#556070;margin-left:auto;padding-right:4px;min-width:180px;text-align:right}
 
-/* MAIN LAYOUT */
-#main{display:flex;flex:1;overflow:hidden;}
+/* ═══════════════ BODY LAYOUT ═══════════════ */
+#body{display:flex;flex:1;overflow:hidden;min-height:0}
 
-/* LEFT PALETTE */
-#palette{width:160px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;padding:6px;}
-#palette::-webkit-scrollbar{width:3px;}
-#palette::-webkit-scrollbar-thumb{background:var(--bg3);}
-.pal-section{font-size:9px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.1em;padding:6px 4px 4px;border-bottom:1px solid var(--border);margin-bottom:4px;}
-.pal-item{display:flex;align-items:center;gap:6px;padding:5px 6px;border:1px solid var(--border);border-radius:3px;cursor:pointer;margin-bottom:3px;background:var(--bg3);transition:all 0.12s;}
-.pal-item:hover{border-color:var(--accent);background:rgba(232,160,32,0.06);}
-.pal-item.active-layer{border-color:var(--accent);background:rgba(232,160,32,0.1);}
-.pal-icon{width:28px;height:18px;flex-shrink:0;}
-.pal-label{font-size:9px;color:var(--text2);line-height:1.2;}
+/* ═══════════════ LEFT SIDEBAR ═══════════════ */
+#sidebar{width:148px;flex-shrink:0;background:#14161c;border-right:1px solid #2a2d35;overflow-y:auto;overflow-x:hidden}
+#sidebar::-webkit-scrollbar{width:4px}
+#sidebar::-webkit-scrollbar-thumb{background:#2a2d35;border-radius:2px}
+.cat{font-size:8.5px;font-weight:700;color:#e8a020;text-transform:uppercase;letter-spacing:.1em;padding:7px 8px 4px;border-top:1px solid #2a2d35;margin-top:2px}
+.cat:first-child{border-top:none;margin-top:0}
+.items{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:0 6px 6px}
+.item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px 5px;border:1px solid #2a2d35;border-radius:4px;cursor:pointer;background:#1c1e26;transition:all .12s;user-select:none}
+.item:hover{border-color:#e8a020;background:#22252f}
+.item.active{border-color:#e8a020;background:rgba(232,160,32,.1)}
+.item svg{width:44px;height:32px;display:block}
+.item span{font-size:8px;color:#8a8f9e;text-align:center;line-height:1.25;max-width:60px}
 
-/* CANVAS WRAP */
-#canvas-wrap{flex:1;overflow:auto;background:#2c3038;position:relative;cursor:crosshair;}
-#canvas-wrap.mode-select{cursor:default;}
-#canvas-wrap.mode-pan{cursor:grab;}
-#drawing-svg{display:block;}
+/* ═══════════════ CANVAS AREA ═══════════════ */
+#canvas-area{flex:1;overflow:hidden;position:relative;background:#2a2d35;cursor:default}
+#canvas-scroll{width:100%;height:100%;overflow:auto;position:relative}
+#canvas-scroll::-webkit-scrollbar{width:10px;height:10px}
+#canvas-scroll::-webkit-scrollbar-track{background:#1c1e24}
+#canvas-scroll::-webkit-scrollbar-thumb{background:#3a3d48;border-radius:4px}
+#canvas-wrap{display:inline-block;position:relative;transform-origin:top left}
+#main-svg{display:block;cursor:crosshair}
+#main-svg.sel{cursor:default}
+#main-svg.pan{cursor:grab}
 
-/* RIGHT PANEL - TITLE BLOCK EDITOR */
-#right-panel{width:220px;flex-shrink:0;background:var(--bg2);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
-#right-panel::-webkit-scrollbar{width:3px;}
-#right-panel::-webkit-scrollbar-thumb{background:var(--bg3);}
-.rp-section{border-bottom:1px solid var(--border);padding:8px;}
-.rp-title{font-size:9px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;}
-.rp-field{margin-bottom:5px;}
-.rp-label{font-size:9px;color:var(--text2);margin-bottom:2px;display:block;}
-.rp-input{width:100%;padding:3px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:2px;color:var(--text);font-size:10px;font-family:'Courier New',monospace;outline:none;}
-.rp-input:focus{border-color:var(--accent);}
-.rev-row{display:grid;grid-template-columns:18px 1fr 26px 50px;gap:2px;margin-bottom:2px;}
-.rev-cell{padding:2px 3px;background:var(--bg3);border:1px solid var(--border);border-radius:2px;color:var(--text);font-size:9px;font-family:'Courier New',monospace;outline:none;}
-.rev-cell:focus{border-color:var(--accent);}
-.props-empty{font-size:10px;color:var(--text2);text-align:center;padding:20px 10px;}
+/* ═══════════════ RIGHT PANEL ═══════════════ */
+#right{width:210px;flex-shrink:0;background:#14161c;border-left:1px solid #2a2d35;overflow-y:auto;display:flex;flex-direction:column}
+#right::-webkit-scrollbar{width:4px}
+#right::-webkit-scrollbar-thumb{background:#2a2d35}
+.rp-blk{border-bottom:1px solid #2a2d35;padding:8px 10px}
+.rp-hd{font-size:8.5px;font-weight:700;color:#e8a020;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.rp-row{margin-bottom:5px}
+.rp-lbl{font-size:8px;color:#556070;display:block;margin-bottom:2px}
+.rp-in{width:100%;padding:3px 6px;background:#1c1e26;border:1px solid #2a2d35;border-radius:3px;color:#c8cbd4;font-size:10px;font-family:'Courier New',monospace;outline:none}
+.rp-in:focus{border-color:#e8a020}
+select.rp-in{cursor:pointer}
+.rev-grid{display:grid;grid-template-columns:20px 1fr 28px 56px;gap:2px;margin-bottom:3px}
+.rev-hdr{font-size:7.5px;color:#556070;text-align:center}
+.rev-in{padding:2px 4px;background:#1c1e26;border:1px solid #2a2d35;border-radius:2px;color:#c8cbd4;font-size:8.5px;font-family:'Courier New',monospace;outline:none;width:100%}
+.rev-in:focus{border-color:#e8a020}
+.rev-ltr{font-size:9px;color:#e8a020;text-align:center;padding-top:3px;font-weight:700}
 
-/* STATUS BAR */
-#statusbar{height:20px;background:var(--bg2);border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 10px;font-size:9px;color:var(--text2);font-family:'Courier New',monospace;flex-shrink:0;}
-.sb-item{display:flex;align-items:center;gap:4px;}
-#sb-mode-dot{width:6px;height:6px;border-radius:50%;background:#00e5a0;}
-
-/* LEGEND SYMBOLS (used in palette SVGs) */
-.leg-site-boundary{stroke:#ff4444;stroke-width:2.5;fill:none;}
-.leg-fence{stroke:#333;stroke-width:1.5;stroke-dasharray:4 2;fill:none;}
-.leg-veg{fill:#88bb44;opacity:0.7;}
-.leg-wetlands{fill:#4499cc;opacity:0.6;}
-.leg-pond{fill:#2266aa;opacity:0.7;}
-.leg-fire-road{fill:#cc7733;opacity:0.7;}
-.leg-road{fill:#aa9966;opacity:0.7;}
-.leg-batt{fill:none;stroke:#3388cc;stroke-width:1.5;}
-.leg-mvt{fill:none;stroke:#555577;stroke-width:1.5;}
-.leg-fire-stage{fill:#dd3333;opacity:0.5;}
+/* ═══════════════ STATUSBAR ═══════════════ */
+#statusbar{height:20px;background:#0e1014;border-top:1px solid #2a2d35;display:flex;align-items:center;gap:0;padding:0 10px;flex-shrink:0;font-size:9px;color:#556070;font-family:'Courier New',monospace}
+#statusbar span{margin-right:14px}
+#statusbar b{color:#c8cbd4}
 </style>
 </head>
 <body>
 
-<!-- TOOLBAR -->
-<div id="toolbar">
-  <div class="tb-group">
-    <span style="color:var(--accent);font-size:10px;font-weight:700;letter-spacing:0.1em;margin-right:4px;">BESS SITE PLAN</span>
-  </div>
-  <div class="tb-group">
-    <button class="tb-btn active" id="btn-select" onclick="setTool('select')" title="Select/Move (V)">SELECT</button>
-    <button class="tb-btn" id="btn-polyline" onclick="setTool('polyline')" title="Polyline (P)">PLINE</button>
-    <button class="tb-btn" id="btn-rect" onclick="setTool('rect')" title="Rectangle (R)">RECT</button>
-    <button class="tb-btn" id="btn-polygon" onclick="setTool('polygon')" title="Polygon (G)">POLY</button>
-    <button class="tb-btn" id="btn-circle" onclick="setTool('circle')" title="Circle (C)">CIRCLE</button>
-    <button class="tb-btn" id="btn-text" onclick="setTool('text')" title="Text (T)">TEXT</button>
-    <button class="tb-btn" id="btn-dim" onclick="setTool('dim')" title="Dimension (D)">DIM</button>
-  </div>
-  <div class="tb-group">
-    <button class="tb-btn" onclick="toggleSnap()" id="btn-snap" title="Snap to grid">SNAP:ON</button>
-    <button class="tb-btn" onclick="toggleGrid()" id="btn-grid" title="Toggle grid">GRID:ON</button>
-    <button class="tb-btn" onclick="zoomFit()" title="Zoom to fit (F)">FIT</button>
-    <button class="tb-btn" onclick="zoomIn()">Z+</button>
-    <button class="tb-btn" onclick="zoomOut()">Z-</button>
-  </div>
-  <div class="tb-group">
-    <button class="tb-btn" onclick="doUndo()" title="Undo (Ctrl+Z)">UNDO</button>
-    <button class="tb-btn" onclick="doRedo()" title="Redo (Ctrl+Y)">REDO</button>
-    <button class="tb-btn danger" onclick="deleteSelected()" title="Delete (Del)" style="color:#ff6b6b;">DELETE</button>
-    <button class="tb-btn" onclick="clearAll()" style="color:#ff6b6b;">CLEAR</button>
-  </div>
-  <div class="tb-group">
-    <button class="tb-btn export" onclick="exportSVG()">↓ SVG</button>
-    <button class="tb-btn export-dwg" onclick="exportDXF()">↓ DXF/DWG</button>
-    <button class="tb-btn export-pdf" onclick="exportPDF()">↓ PDF</button>
-  </div>
-  <div id="snap-indicator"></div>
-  <div id="coord-display">X: 0.00   Y: 0.00</div>
+<!-- TOPBAR -->
+<div id="topbar">
+  <button class="btn on" id="b-sel"    onclick="setTool('sel')">▲ Select</button>
+  <button class="btn"    id="b-line"   onclick="setTool('line')">/ Line</button>
+  <button class="btn"    id="b-rect"   onclick="setTool('rect')">□ Rect</button>
+  <button class="btn"    id="b-poly"   onclick="setTool('poly')">⬡ Poly</button>
+  <button class="btn"    id="b-circle" onclick="setTool('circle')">○ Circle</button>
+  <button class="btn"    id="b-text"   onclick="setTool('text')">T Text</button>
+  <button class="btn"    id="b-dim"    onclick="setTool('dim')">↔ Dim</button>
+  <div class="vsep"></div>
+  <button class="btn" id="b-snap" onclick="toggleSnap()">Snap ON</button>
+  <button class="btn" id="b-grid" onclick="toggleGrid()">Grid ON</button>
+  <button class="btn" onclick="zoomFit()">⊡ Fit</button>
+  <button class="btn" onclick="zoomStep(1.2)">+</button>
+  <button class="btn" onclick="zoomStep(0.83)">−</button>
+  <div class="vsep"></div>
+  <button class="btn" onclick="doUndo()">↩ Undo</button>
+  <button class="btn" onclick="doRedo()">↪ Redo</button>
+  <button class="btn" onclick="delSel()">✕ Del</button>
+  <div class="vsep"></div>
+  <button class="btn svg-btn" onclick="exportSVG()">↓ SVG</button>
+  <button class="btn dxf-btn" onclick="exportDXF()">↓ DXF</button>
+  <button class="btn pdf-btn" onclick="exportPDF()">↓ PDF</button>
+  <button class="btn clr-btn" onclick="clearAll()">⊘ Clear</button>
+  <div id="coord">X: 0.0m   Y: 0.0m   Scale: 1"=30'</div>
 </div>
 
-<!-- MAIN -->
-<div id="main">
+<!-- BODY -->
+<div id="body">
 
-  <!-- LEFT PALETTE -->
-  <div id="palette">
-    <div class="pal-section">Site Elements</div>
+<!-- LEFT SIDEBAR -->
+<div id="sidebar">
 
-    <div class="pal-item" onclick="setActiveLayer('site_boundary')" id="pal-site_boundary" title="Draw site boundary">
-      <svg class="pal-icon" viewBox="0 0 28 18"><rect x="2" y="4" width="24" height="10" fill="none" stroke="#ff4444" stroke-width="2.5"/></svg>
-      <span class="pal-label">SITE<br>BOUNDARY</span>
+  <div class="cat">Site Civil</div>
+  <div class="items">
+    <div class="item active" id="p-site_boundary" onclick="pickLayer('site_boundary','poly')">
+      <svg viewBox="0 0 44 32"><rect x="3" y="4" width="38" height="24" fill="none" stroke="#ff3333" stroke-width="2.5"/></svg>
+      <span>Site Boundary</span>
     </div>
-    <div class="pal-item" onclick="setActiveLayer('fence')" id="pal-fence">
-      <svg class="pal-icon" viewBox="0 0 28 18"><line x1="2" y1="9" x2="26" y2="9" stroke="#333" stroke-width="1.5" stroke-dasharray="4 2"/><line x1="6" y1="5" x2="6" y2="13" stroke="#333" stroke-width="1"/><line x1="14" y1="5" x2="14" y2="13" stroke="#333" stroke-width="1"/><line x1="22" y1="5" x2="22" y2="13" stroke="#333" stroke-width="1"/></svg>
-      <span class="pal-label">FENCE</span>
+    <div class="item" id="p-fence" onclick="pickLayer('fence','line')">
+      <svg viewBox="0 0 44 32"><line x1="2" y1="16" x2="42" y2="16" stroke="#444" stroke-width="1.5" stroke-dasharray="5,3"/><line x1="9" y1="8" x2="9" y2="24" stroke="#444" stroke-width="1.2"/><line x1="22" y1="8" x2="22" y2="24" stroke="#444" stroke-width="1.2"/><line x1="35" y1="8" x2="35" y2="24" stroke="#444" stroke-width="1.2"/></svg>
+      <span>Fence</span>
     </div>
-    <div class="pal-item" onclick="setActiveLayer('vegetation')" id="pal-vegetation">
-      <svg class="pal-icon" viewBox="0 0 28 18"><rect x="2" y="2" width="24" height="14" fill="#88cc44" opacity="0.6"/><path d="M2 14 Q7 8 12 14 Q17 8 22 14 Q25 9 26 14" fill="none" stroke="#558822" stroke-width="1"/></svg>
-      <span class="pal-label">VEGETATION</span>
+    <div class="item" id="p-vegetation" onclick="pickLayer('vegetation','poly')">
+      <svg viewBox="0 0 44 32"><rect x="2" y="3" width="40" height="26" fill="#88cc44" opacity=".55"/><path d="M2 26 Q11 14 22 26 Q33 14 42 26" fill="none" stroke="#558822" stroke-width="1.2"/><path d="M2 20 Q11 10 22 20 Q33 10 42 20" fill="none" stroke="#558822" stroke-width="0.8" opacity=".5"/></svg>
+      <span>Vegetation</span>
     </div>
-    <div class="pal-item" onclick="setActiveLayer('wetlands')" id="pal-wetlands">
-      <svg class="pal-icon" viewBox="0 0 28 18"><rect x="2" y="2" width="24" height="14" fill="#4499cc" opacity="0.5"/><line x1="2" y1="6" x2="26" y2="6" stroke="#2266aa" stroke-width="0.7"/><line x1="2" y1="10" x2="26" y2="10" stroke="#2266aa" stroke-width="0.7"/><line x1="2" y1="14" x2="26" y2="14" stroke="#2266aa" stroke-width="0.7"/></svg>
-      <span class="pal-label">WETLANDS</span>
+    <div class="item" id="p-wetlands" onclick="pickLayer('wetlands','poly')">
+      <svg viewBox="0 0 44 32"><rect x="2" y="3" width="40" height="26" fill="#4499cc" opacity=".45"/><line x1="2" y1="10" x2="42" y2="10" stroke="#2266aa" stroke-width=".8"/><line x1="2" y1="17" x2="42" y2="17" stroke="#2266aa" stroke-width=".8"/><line x1="2" y1="24" x2="42" y2="24" stroke="#2266aa" stroke-width=".8"/></svg>
+      <span>Wetlands</span>
     </div>
-    <div class="pal-item" onclick="setActiveLayer('pond')" id="pal-pond">
-      <svg class="pal-icon" viewBox="0 0 28 18"><ellipse cx="14" cy="9" rx="11" ry="7" fill="#2266aa" opacity="0.7"/></svg>
-      <span class="pal-label">STORM WATER<br>POND</span>
+    <div class="item" id="p-access_road" onclick="pickLayer('access_road','poly')">
+      <svg viewBox="0 0 44 32"><rect x="2" y="10" width="40" height="12" fill="#aa9966" opacity=".85"/><line x1="2" y1="16" x2="42" y2="16" stroke="#887744" stroke-width=".5" stroke-dasharray="6,3"/></svg>
+      <span>Access Road</span>
     </div>
-
-    <div class="pal-section" style="margin-top:6px">Roads</div>
-
-    <div class="pal-item" onclick="setActiveLayer('fire_road')" id="pal-fire_road">
-      <svg class="pal-icon" viewBox="0 0 28 18"><rect x="2" y="5" width="24" height="8" fill="#cc7733" opacity="0.7"/><line x1="2" y1="5" x2="26" y2="13" stroke="#aa5500" stroke-width="0.8"/><line x1="2" y1="7" x2="26" y2="15" stroke="#aa5500" stroke-width="0.8" visibility="hidden"/></svg>
-      <span class="pal-label">FIRE BATT<br>ACCESS RD</span>
+    <div class="item" id="p-pond" onclick="pickLayer('pond','poly')">
+      <svg viewBox="0 0 44 32"><ellipse cx="22" cy="16" rx="18" ry="12" fill="#2266aa" opacity=".7"/><ellipse cx="22" cy="16" rx="10" ry="7" fill="#3388cc" opacity=".4"/></svg>
+      <span>Storm Pond</span>
     </div>
-    <div class="pal-item" onclick="setActiveLayer('access_road')" id="pal-access_road">
-      <svg class="pal-icon" viewBox="0 0 28 18"><rect x="2" y="5" width="24" height="8" fill="#aa9966" opacity="0.8"/></svg>
-      <span class="pal-label">ACCESS ROAD</span>
+    <div class="item" id="p-access_gate" onclick="pickLayer('access_gate','rect')">
+      <svg viewBox="0 0 44 32"><line x1="2" y1="16" x2="12" y2="16" stroke="#555" stroke-width="2"/><line x1="32" y1="16" x2="42" y2="16" stroke="#555" stroke-width="2"/><path d="M12 8 L22 16 L32 8" fill="none" stroke="#555" stroke-width="2" stroke-linejoin="round"/><line x1="12" y1="8" x2="12" y2="24" stroke="#555" stroke-width="2"/><line x1="32" y1="8" x2="32" y2="24" stroke="#555" stroke-width="2"/></svg>
+      <span>Access Gate</span>
     </div>
-    <div class="pal-item" onclick="setActiveLayer('access_gate')" id="pal-access_gate">
-      <svg class="pal-icon" viewBox="0 0 28 18"><line x1="2" y1="9" x2="8" y2="9" stroke="#333" stroke-width="1.5"/><line x1="20" y1="9" x2="26" y2="9" stroke="#333" stroke-width="1.5"/><path d="M8 4 L14 9 L20 4" fill="none" stroke="#333" stroke-width="1.5" stroke-linejoin="round"/></svg>
-      <span class="pal-label">ACCESS GATE</span>
-    </div>
-
-    <div class="pal-section" style="margin-top:6px">Equipment</div>
-
-    <div class="pal-item" onclick="setActiveLayer('battery_container')" id="pal-battery_container">
-      <svg class="pal-icon" viewBox="0 0 28 18"><rect x="3" y="3" width="22" height="12" fill="#ddeeff" stroke="#3388cc" stroke-width="1.5"/><text x="14" y="12" text-anchor="middle" font-size="5" fill="#3388cc" font-family="Courier New">BESS</text></svg>
-      <span class="pal-label">BATTERY<br>CONTAINER</span>
-    </div>
-    <div class="pal-item" onclick="setActiveLayer('mv_transformer')" id="pal-mv_transformer">
-      <svg class="pal-icon" viewBox="0 0 28 18"><rect x="3" y="3" width="22" height="12" fill="#eeeef8" stroke="#555577" stroke-width="1.5"/><text x="14" y="12" text-anchor="middle" font-size="5" fill="#555577" font-family="Courier New">MVT</text></svg>
-      <span class="pal-label">MV<br>TRANSFORMER</span>
-    </div>
-    <div class="pal-item" onclick="setActiveLayer('fire_staging')" id="pal-fire_staging">
-      <svg class="pal-icon" viewBox="0 0 28 18"><rect x="2" y="2" width="24" height="14" fill="#dd3333" opacity="0.4"/><line x1="2" y1="2" x2="26" y2="16" stroke="#aa0000" stroke-width="0.8"/><line x1="2" y1="8" x2="20" y2="16" stroke="#aa0000" stroke-width="0.8"/><line x1="8" y1="2" x2="26" y2="10" stroke="#aa0000" stroke-width="0.8"/></svg>
-      <span class="pal-label">FIRE STAGING<br>AREA</span>
-    </div>
-
-    <div class="pal-section" style="margin-top:6px">Utilities</div>
-    <div class="pal-item" onclick="setActiveLayer('annotation')" id="pal-annotation">
-      <svg class="pal-icon" viewBox="0 0 28 18"><text x="4" y="13" font-size="11" fill="#d0d4dc" font-family="Courier New" font-weight="bold">Aa</text></svg>
-      <span class="pal-label">ANNOTATION</span>
-    </div>
-    <div class="pal-item" onclick="setActiveLayer('dimension')" id="pal-dimension">
-      <svg class="pal-icon" viewBox="0 0 28 18"><line x1="3" y1="9" x2="25" y2="9" stroke="#ffcc44" stroke-width="1"/><line x1="3" y1="6" x2="3" y2="12" stroke="#ffcc44" stroke-width="1"/><line x1="25" y1="6" x2="25" y2="12" stroke="#ffcc44" stroke-width="1"/><text x="14" y="8" text-anchor="middle" font-size="5" fill="#ffcc44">25.0m</text></svg>
-      <span class="pal-label">DIMENSION</span>
+    <div class="item" id="p-fire_staging" onclick="pickLayer('fire_staging','poly')">
+      <svg viewBox="0 0 44 32"><rect x="2" y="3" width="40" height="26" fill="#dd3333" opacity=".35"/><line x1="2" y1="3" x2="42" y2="29" stroke="#aa0000" stroke-width=".8"/><line x1="2" y1="16" x2="42" y2="29" stroke="#aa0000" stroke-width=".8"/><line x1="2" y1="3" x2="42" y2="16" stroke="#aa0000" stroke-width=".8"/><rect x="2" y="3" width="40" height="26" fill="none" stroke="#cc0000" stroke-width="1.2"/></svg>
+      <span>Fire Staging</span>
     </div>
   </div>
 
-  <!-- CANVAS -->
-  <div id="canvas-wrap"
-    onmousedown="onMouseDown(event)"
-    onmousemove="onMouseMove(event)"
-    onmouseup="onMouseUp(event)"
-    ondblclick="onDblClick(event)"
-    onwheel="onWheel(event)"
-    ondragover="event.preventDefault()"
-    ondrop="onDrop(event)">
-    <svg id="drawing-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+  <div class="cat">BESS Equipment</div>
+  <div class="items">
+    <div class="item" id="p-battery" onclick="pickLayer('battery','rect')">
+      <svg viewBox="0 0 44 32"><rect x="2" y="5" width="36" height="22" fill="#ddeeff" stroke="#2266bb" stroke-width="1.8"/><rect x="38" y="10" width="4" height="12" rx="1.5" fill="#2266bb"/><rect x="5" y="9" width="5" height="14" rx="1" fill="#2266bb" opacity=".6"/><rect x="12" y="9" width="5" height="14" rx="1" fill="#2266bb" opacity=".5"/><rect x="19" y="9" width="5" height="14" rx="1" fill="#2266bb" opacity=".35"/><rect x="26" y="9" width="5" height="14" rx="1" fill="#2266bb" opacity=".2"/><text x="22" y="30" text-anchor="middle" font-size="6" fill="#2266bb" font-family="Courier New" font-weight="bold">BESS</text></svg>
+      <span>Battery Container</span>
+    </div>
+    <div class="item" id="p-mv_transformer" onclick="pickLayer('mv_transformer','rect')">
+      <svg viewBox="0 0 44 32"><rect x="3" y="4" width="38" height="24" fill="#eeeef8" stroke="#444466" stroke-width="1.8"/><circle cx="16" cy="16" r="8" fill="none" stroke="#444466" stroke-width="1.2"/><circle cx="28" cy="16" r="8" fill="none" stroke="#444466" stroke-width="1.2"/><line x1="3" y1="16" x2="8" y2="16" stroke="#444466" stroke-width="1.2"/><line x1="36" y1="16" x2="41" y2="16" stroke="#444466" stroke-width="1.2"/></svg>
+      <span>MV Transformer</span>
+    </div>
+    <div class="item" id="p-pcs" onclick="pickLayer('pcs','rect')">
+      <svg viewBox="0 0 44 32"><rect x="3" y="4" width="38" height="24" fill="#fff8ee" stroke="#cc6600" stroke-width="1.8"/><path d="M12 16 L18 8 L18 13 L26 13 L26 19 L18 19 L18 24 Z" fill="#cc6600" opacity=".6"/><text x="32" y="21" text-anchor="middle" font-size="6.5" fill="#cc6600" font-family="Courier New" font-weight="bold">PCS</text></svg>
+      <span>PCS / Inverter</span>
+    </div>
+    <div class="item" id="p-substation" onclick="pickLayer('substation','rect')">
+      <svg viewBox="0 0 44 32"><rect x="3" y="4" width="38" height="24" fill="#f0f0ff" stroke="#333366" stroke-width="1.8"/><text x="22" y="14" text-anchor="middle" font-size="6" fill="#333366" font-family="Courier New" font-weight="bold">SUB</text><text x="22" y="24" text-anchor="middle" font-size="5.5" fill="#333366" font-family="Courier New">STATION</text></svg>
+      <span>Substation</span>
+    </div>
+    <div class="item" id="p-relay" onclick="pickLayer('relay','rect')">
+      <svg viewBox="0 0 44 32"><rect x="5" y="4" width="34" height="24" fill="#eeffee" stroke="#228833" stroke-width="1.8"/><text x="22" y="15" text-anchor="middle" font-size="7" fill="#228833" font-family="Courier New" font-weight="bold">87T</text><text x="22" y="25" text-anchor="middle" font-size="5.5" fill="#228833" font-family="Courier New">RELAY</text></svg>
+      <span>Protection Relay</span>
+    </div>
+    <div class="item" id="p-scada" onclick="pickLayer('scada','rect')">
+      <svg viewBox="0 0 44 32"><rect x="4" y="4" width="36" height="20" fill="#f0eeff" stroke="#554488" stroke-width="1.8"/><rect x="7" y="7" width="30" height="10" rx="1" fill="#554488" opacity=".15"/><text x="22" y="16" text-anchor="middle" font-size="6.5" fill="#554488" font-family="Courier New" font-weight="bold">SCADA</text><rect x="14" y="26" width="16" height="2" rx="1" fill="#554488" opacity=".5"/><line x1="22" y1="24" x2="22" y2="26" stroke="#554488" stroke-width="1"/></svg>
+      <span>SCADA / EMS</span>
+    </div>
   </div>
 
-  <!-- RIGHT: TITLE BLOCK EDITOR -->
-  <div id="right-panel">
-    <div class="rp-section">
-      <div class="rp-title">Project Info</div>
-      <div class="rp-field"><label class="rp-label">PROJECT NAME</label><input class="rp-input" id="tb-project" value="PROJECT NAME" oninput="updateTitleBlock()"></div>
-      <div class="rp-field"><label class="rp-label">% DESIGN</label><input class="rp-input" id="tb-design-pct" value="30" oninput="updateTitleBlock()"></div>
-      <div class="rp-field"><label class="rp-label">CLIENT NAME</label><input class="rp-input" id="tb-client" value="CLIENT NAME" oninput="updateTitleBlock()"></div>
-      <div class="rp-field"><label class="rp-label">PROJECT REF</label><input class="rp-input" id="tb-ref" value="US_PROJECT_REF" oninput="updateTitleBlock()"></div>
+  <div class="cat">Electrical (SLD)</div>
+  <div class="items">
+    <div class="item" id="p-vcb" onclick="pickLayer('vcb','line')">
+      <svg viewBox="0 0 44 32"><line x1="22" y1="2" x2="22" y2="11" stroke="#cc2222" stroke-width="1.8"/><circle cx="22" cy="16" r="5" fill="none" stroke="#cc2222" stroke-width="1.5"/><line x1="22" y1="21" x2="22" y2="30" stroke="#cc2222" stroke-width="1.8" stroke-dasharray="3,2"/><text x="28" y="29" font-size="6" fill="#cc2222" font-family="Courier New">VCB</text></svg>
+      <span>VCB</span>
     </div>
-    <div class="rp-section">
-      <div class="rp-title">Sheet Info</div>
-      <div class="rp-field"><label class="rp-label">SHEET NAME</label><input class="rp-input" id="tb-sheet-name" value="SITE PLAN" oninput="updateTitleBlock()"></div>
-      <div class="rp-field"><label class="rp-label">SHEET NO</label><input class="rp-input" id="tb-sheet-no" value="C-001" oninput="updateTitleBlock()"></div>
-      <div class="rp-field"><label class="rp-label">LAT / LONG</label><input class="rp-input" id="tb-latlong" value="XX.XX / -XX.XX" oninput="updateTitleBlock()"></div>
-      <div class="rp-field"><label class="rp-label">DRWN</label><input class="rp-input" id="tb-drwn" value="XX" oninput="updateTitleBlock()" style="width:60px;display:inline"></div>
-      <label class="rp-label" style="display:inline;margin:0 4px">REVW</label><input class="rp-input" id="tb-revw" value="XX" oninput="updateTitleBlock()" style="width:60px;display:inline">
-      <div class="rp-field" style="margin-top:4px"><label class="rp-label">APPRVD</label><input class="rp-input" id="tb-apprvd" value="XX" oninput="updateTitleBlock()"></div>
+    <div class="item" id="p-busbar" onclick="pickLayer('busbar','line')">
+      <svg viewBox="0 0 44 32"><rect x="2" y="13" width="40" height="6" rx="1" fill="#888" opacity=".8"/><line x1="11" y1="6" x2="11" y2="13" stroke="#888" stroke-width="1.5"/><line x1="22" y1="6" x2="22" y2="13" stroke="#888" stroke-width="1.5"/><line x1="33" y1="6" x2="33" y2="13" stroke="#888" stroke-width="1.5"/></svg>
+      <span>34.5kV Busbar</span>
     </div>
-    <div class="rp-section">
-      <div class="rp-title">Revision Table</div>
-      <div style="display:grid;grid-template-columns:18px 1fr 26px 54px;gap:2px;margin-bottom:4px;">
-        <span style="font-size:8px;color:var(--text2);text-align:center">REV</span>
-        <span style="font-size:8px;color:var(--text2)">DESCRIPTION</span>
-        <span style="font-size:8px;color:var(--text2)">BY</span>
-        <span style="font-size:8px;color:var(--text2)">DATE</span>
-      </div>
-      <div id="rev-rows"></div>
+    <div class="item" id="p-meter" onclick="pickLayer('meter','rect')">
+      <svg viewBox="0 0 44 32"><circle cx="22" cy="16" r="12" fill="none" stroke="#228866" stroke-width="1.5"/><path d="M10 22 Q22 6 34 22" fill="none" stroke="#446655" stroke-width=".8"/><line x1="22" y1="16" x2="28" y2="10" stroke="#228866" stroke-width="1.5" stroke-linecap="round"/><circle cx="22" cy="16" r="1.5" fill="#228866"/></svg>
+      <span>Smart Meter</span>
     </div>
-    <div class="rp-section">
-      <div class="rp-title">Drawing Scale</div>
-      <div class="rp-field"><label class="rp-label">SCALE</label>
-        <select class="rp-input" id="tb-scale" onchange="updateTitleBlock()">
-          <option value="1:500">1:500</option>
-          <option value="1:1000" selected>1:1000</option>
-          <option value="1:2000">1:2000</option>
-          <option value="1:5000">1:5000</option>
-          <option value="NTS">NTS</option>
-        </select>
-      </div>
+    <div class="item" id="p-cable" onclick="pickLayer('cable','line')">
+      <svg viewBox="0 0 44 32"><path d="M4 16 Q12 8 22 16 Q32 24 40 16" fill="none" stroke="#cc6600" stroke-width="2.5"/><circle cx="4" cy="16" r="2" fill="#cc6600"/><circle cx="40" cy="16" r="2" fill="#cc6600"/></svg>
+      <span>HV Cable</span>
     </div>
-    <div class="rp-section" id="props-section">
-      <div class="rp-title">Selected Object</div>
-      <div class="props-empty" id="props-empty">No object selected</div>
-      <div id="props-fields" style="display:none"></div>
+  </div>
+
+  <div class="cat">Annotation</div>
+  <div class="items">
+    <div class="item" id="p-annotation" onclick="pickLayer('annotation','text')">
+      <svg viewBox="0 0 44 32"><text x="6" y="24" font-size="20" fill="#c8cbd4" font-family="Courier New" font-weight="bold">Aa</text></svg>
+      <span>Text Label</span>
+    </div>
+    <div class="item" id="p-dimension" onclick="pickLayer('dimension','dim')">
+      <svg viewBox="0 0 44 32"><line x1="4" y1="16" x2="40" y2="16" stroke="#ddaa00" stroke-width="1"/><polygon points="4,13 4,19 10,16" fill="#ddaa00"/><polygon points="40,13 40,19 34,16" fill="#ddaa00"/><line x1="4" y1="8" x2="4" y2="24" stroke="#ddaa00" stroke-width=".8"/><line x1="40" y1="8" x2="40" y2="24" stroke="#ddaa00" stroke-width=".8"/><text x="22" y="12" text-anchor="middle" font-size="7" fill="#ddaa00" font-family="Courier New">25.0m</text></svg>
+      <span>Dimension</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- CANVAS AREA -->
+<div id="canvas-area">
+  <div id="canvas-scroll">
+    <div id="canvas-wrap">
+      <svg id="main-svg" xmlns="http://www.w3.org/2000/svg" class="sel"
+        onmousedown="svgDown(event)"
+        onmousemove="svgMove(event)"
+        onmouseup="svgUp(event)"
+        ondblclick="svgDbl(event)"
+        onwheel="svgWheel(event)"
+        ondragover="event.preventDefault()"
+        ondrop="svgDrop(event)">
+
+        <defs id="svg-defs">
+          <!-- Hatch patterns -->
+          <pattern id="hVeg" width="12" height="12" patternUnits="userSpaceOnUse">
+            <rect width="12" height="12" fill="#88cc44" opacity=".45"/>
+            <path d="M0 12 Q3 6 6 12 Q9 6 12 12" fill="none" stroke="#558822" stroke-width=".8"/>
+          </pattern>
+          <pattern id="hWet" width="10" height="10" patternUnits="userSpaceOnUse">
+            <rect width="10" height="10" fill="#4499cc" opacity=".35"/>
+            <line x1="0" y1="3" x2="10" y2="3" stroke="#2266aa" stroke-width=".7"/>
+            <line x1="0" y1="7" x2="10" y2="7" stroke="#2266aa" stroke-width=".7"/>
+          </pattern>
+          <pattern id="hFire" width="8" height="8" patternUnits="userSpaceOnUse">
+            <rect width="8" height="8" fill="#dd3333" opacity=".25"/>
+            <line x1="0" y1="0" x2="8" y2="8" stroke="#aa0000" stroke-width=".7"/>
+            <line x1="0" y1="4" x2="4" y2="8" stroke="#aa0000" stroke-width=".7"/>
+            <line x1="4" y1="0" x2="8" y2="4" stroke="#aa0000" stroke-width=".7"/>
+          </pattern>
+          <pattern id="hPond" width="10" height="10" patternUnits="userSpaceOnUse">
+            <rect width="10" height="10" fill="#2266aa" opacity=".6"/>
+          </pattern>
+          <pattern id="hRoad" width="10" height="10" patternUnits="userSpaceOnUse">
+            <rect width="10" height="10" fill="#aa9966" opacity=".75"/>
+          </pattern>
+          <!-- Arrow for dimensions -->
+          <marker id="arr-dim" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+            <polygon points="0,1 8,4 0,7" fill="#ddaa00"/>
+          </marker>
+          <marker id="arr-dim-rev" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto-start-reverse">
+            <polygon points="0,1 8,4 0,7" fill="#ddaa00"/>
+          </marker>
+          <!-- Selection highlight filter -->
+          <filter id="f-sel" x="-10%" y="-10%" width="120%" height="120%">
+            <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#ff9900" flood-opacity=".9"/>
+          </filter>
+        </defs>
+
+        <!-- Layers in order -->
+        <g id="l-grid"></g>
+        <g id="l-sheet"></g>
+        <g id="l-objects"></g>
+        <g id="l-temp"></g>
+        <g id="l-sel"></g>
+      </svg>
     </div>
   </div>
 </div>
 
-<!-- STATUS BAR -->
+<!-- RIGHT PANEL -->
+<div id="right">
+  <div class="rp-blk">
+    <div class="rp-hd">Project Info</div>
+    <div class="rp-row"><label class="rp-lbl">PROJECT NAME</label><input class="rp-in" id="f-proj" value="PROJECT NAME" oninput="updateTB()"></div>
+    <div class="rp-row"><label class="rp-lbl">% DESIGN</label><input class="rp-in" id="f-pct" value="30" oninput="updateTB()" style="width:60px"></div>
+    <div class="rp-row"><label class="rp-lbl">CLIENT NAME</label><input class="rp-in" id="f-client" value="CLIENT NAME" oninput="updateTB()"></div>
+    <div class="rp-row"><label class="rp-lbl">PROJECT REF</label><input class="rp-in" id="f-ref" value="US_PROJECT_REF" oninput="updateTB()"></div>
+  </div>
+  <div class="rp-blk">
+    <div class="rp-hd">Sheet Info</div>
+    <div class="rp-row"><label class="rp-lbl">SHEET NAME</label><input class="rp-in" id="f-sname" value="CIVIL SITE PLAN" oninput="updateTB()"></div>
+    <div class="rp-row"><label class="rp-lbl">SHEET NO</label><input class="rp-in" id="f-sno" value="S-01" oninput="updateTB()"></div>
+    <div class="rp-row"><label class="rp-lbl">LAT / LONG</label><input class="rp-in" id="f-ll" value="33.0000 / -84.0000" oninput="updateTB()"></div>
+    <div class="rp-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+      <div><label class="rp-lbl">DRWN</label><input class="rp-in" id="f-drwn" value="XX" oninput="updateTB()"></div>
+      <div><label class="rp-lbl">REVW</label><input class="rp-in" id="f-revw" value="XX" oninput="updateTB()"></div>
+      <div><label class="rp-lbl">APPRVD</label><input class="rp-in" id="f-apprvd" value="XX" oninput="updateTB()"></div>
+    </div>
+    <div class="rp-row"><label class="rp-lbl">SCALE</label>
+      <select class="rp-in" id="f-scale" onchange="updateTB()">
+        <option>1:500</option><option selected>1:1000</option>
+        <option>1:2000</option><option>1:5000</option><option>NTS</option>
+      </select>
+    </div>
+  </div>
+  <div class="rp-blk">
+    <div class="rp-hd">Revision Table</div>
+    <div class="rev-grid" style="margin-bottom:4px">
+      <div class="rev-hdr">REV</div><div class="rev-hdr">DESCRIPTION</div>
+      <div class="rev-hdr">BY</div><div class="rev-hdr">DATE</div>
+    </div>
+    <div id="rev-body"></div>
+  </div>
+  <div class="rp-blk" id="props-blk">
+    <div class="rp-hd">Selected Object</div>
+    <div id="props-body" style="font-size:10px;color:#556070">No selection</div>
+  </div>
+</div>
+
+</div><!-- /body -->
+
+<!-- STATUSBAR -->
 <div id="statusbar">
-  <div class="sb-item"><div id="sb-mode-dot"></div><span id="sb-tool">SELECT</span></div>
-  <span>|</span>
-  <div class="sb-item">Layer: <span id="sb-layer" style="color:var(--accent)">SITE_BOUNDARY</span></div>
-  <span>|</span>
-  <div class="sb-item">Objects: <span id="sb-count">0</span></div>
-  <span>|</span>
-  <div class="sb-item">Zoom: <span id="sb-zoom">100%</span></div>
-  <span>|</span>
-  <div class="sb-item">Snap: <span id="sb-snap">20m</span></div>
-  <div style="flex:1"></div>
-  <span>V=select  P=pline  R=rect  G=polygon  C=circle  T=text  D=dim  ESC=cancel  DEL=delete  Ctrl+Z=undo</span>
+  <span>Tool: <b id="sb-tool">Select</b></span>
+  <span>Layer: <b id="sb-layer" style="color:#e8a020">site_boundary</b></span>
+  <span>Objects: <b id="sb-objs">0</b></span>
+  <span>Zoom: <b id="sb-zoom">100%</b></span>
+  <span style="margin-left:auto">V=Select  L=Line  R=Rect  P=Poly  C=Circle  T=Text  D=Dim  F=Fit  ESC=Cancel  Del=Delete  Ctrl+Z=Undo</span>
 </div>
 
+<!-- ═══════════════════════════════ SCRIPT ═══════════════════════════════ -->
 <script>
-// ═══════════════════════════════════════════════
-//  CONSTANTS & CONFIG
-// ═══════════════════════════════════════════════
+'use strict';
 
-// Sheet dimensions in SVG units (1 unit = 1m at 1:1000 scale)
-// 11"×17" at 1:1000 → drawing area ~280m × 175m
-const SHEET_W = 1700;   // SVG units (pts) for full sheet
-const SHEET_H = 1100;
-const MARGIN  = 40;
-const TB_W    = 280;    // title block width
-const DRAW_X1 = MARGIN;
-const DRAW_Y1 = MARGIN + 24; // space for copyright line
-const DRAW_X2 = SHEET_W - TB_W - MARGIN;
-const DRAW_Y2 = SHEET_H - MARGIN - 20; // space for bottom note
-const DRAW_W  = DRAW_X2 - DRAW_X1;
-const DRAW_H  = DRAW_Y2 - DRAW_Y1;
-const TB_X    = SHEET_W - TB_W - MARGIN;
-const TB_Y    = DRAW_Y1;
+// ─────────────────────────────────────────────
+//  SHEET DIMENSIONS (SVG coordinate units = metres at 1:1000)
+//  Full sheet: 17"×11" → 432mm × 279mm → ~432 × 279 "units"
+//  We use 1 unit = 0.5m at 1:1000 for drawing feel
+//  Sheet in SVG: 1600 × 1050 px-units
+// ─────────────────────────────────────────────
+const SW = 1600, SH = 1050;   // sheet width/height in SVG units
+const MB = 40;                  // margin border
+const TB_W = 310;               // title block width
+const DA_X1 = MB, DA_Y1 = MB + 20;  // drawing area top-left
+const DA_X2 = SW - TB_W - MB,  DA_Y2 = SH - MB - 20;
+const DA_W  = DA_X2 - DA_X1,   DA_H  = DA_Y2 - DA_Y1;
+const TB_X  = SW - TB_W - MB + 2, TB_Y = DA_Y1;
+const TB_TW = TB_W - 4;
 
-// Layer definitions — colors, styles, draw mode
-const LAYERS = {
-  site_boundary:    {name:'SITE BOUNDARY',    color:'#ff3333', lw:2.5, dash:'',        fill:'none',     alpha:1,   drawMode:'polyline', closed:true},
-  fence:            {name:'FENCE',             color:'#222222', lw:1.5, dash:'8,4',     fill:'none',     alpha:1,   drawMode:'polyline'},
-  vegetation:       {name:'VEGETATION',        color:'#558822', lw:1,   dash:'',        fill:'#88cc44',  alpha:0.55,drawMode:'polygon',  closed:true, hatch:'veg'},
-  wetlands:         {name:'WETLANDS',          color:'#2266aa', lw:1,   dash:'',        fill:'#4499cc',  alpha:0.5, drawMode:'polygon',  closed:true, hatch:'hz'},
-  pond:             {name:'STORM WATER POND',  color:'#1144aa', lw:1,   dash:'',        fill:'#2266aa',  alpha:0.65,drawMode:'polygon',  closed:true},
-  fire_road:        {name:'FIRE BATT ACCESS',  color:'#aa5500', lw:1,   dash:'',        fill:'#cc7733',  alpha:0.7, drawMode:'polygon',  closed:true, hatch:'diag'},
-  access_road:      {name:'ACCESS ROAD',       color:'#887755', lw:1,   dash:'',        fill:'#aa9966',  alpha:0.75,drawMode:'polygon',  closed:true},
-  access_gate:      {name:'ACCESS GATE',       color:'#222222', lw:1.5, dash:'',        fill:'none',     alpha:1,   drawMode:'rect'},
-  battery_container:{name:'BATTERY CONTAINER', color:'#2266bb', lw:2,   dash:'',        fill:'#ddeeff',  alpha:0.85,drawMode:'rect'},
-  mv_transformer:   {name:'MV TRANSFORMER',    color:'#444466', lw:2,   dash:'',        fill:'#eeeef8',  alpha:0.85,drawMode:'rect'},
-  fire_staging:     {name:'FIRE STAGING AREA', color:'#990000', lw:1.5, dash:'',        fill:'#dd3333',  alpha:0.4, drawMode:'polygon',  closed:true, hatch:'diag2'},
-  annotation:       {name:'ANNOTATION',        color:'#222222', lw:1,   dash:'',        fill:'#222222',  alpha:1,   drawMode:'text'},
-  dimension:        {name:'DIMENSION',         color:'#cc9900', lw:0.8, dash:'',        fill:'none',     alpha:1,   drawMode:'dim'},
+// ─────────────────────────────────────────────
+//  LAYER DEFINITIONS
+// ─────────────────────────────────────────────
+const LD = {
+  site_boundary: {n:'SITE BOUNDARY',    c:'#ff3333', lw:2.5,  dash:'',    fill:'none',     alpha:1,   hatch:null},
+  fence:         {n:'FENCE',            c:'#333333', lw:1.5,  dash:'8,4', fill:'none',     alpha:1,   hatch:null},
+  vegetation:    {n:'VEGETATION',       c:'#558822', lw:1,    dash:'',    fill:'#88cc44',  alpha:.55, hatch:'hVeg'},
+  wetlands:      {n:'WETLANDS',         c:'#2266aa', lw:1,    dash:'',    fill:'#4499cc',  alpha:.45, hatch:'hWet'},
+  access_road:   {n:'ACCESS ROAD',      c:'#887755', lw:1,    dash:'',    fill:'#aa9966',  alpha:.8,  hatch:'hRoad'},
+  pond:          {n:'STORM WATER POND', c:'#1144aa', lw:1,    dash:'',    fill:'#2266aa',  alpha:.65, hatch:'hPond'},
+  access_gate:   {n:'ACCESS GATE',      c:'#444444', lw:1.5,  dash:'',    fill:'#eeeeee',  alpha:.8,  hatch:null},
+  fire_staging:  {n:'FIRE STAGING',     c:'#990000', lw:1.5,  dash:'',    fill:'#dd3333',  alpha:.4,  hatch:'hFire'},
+  battery:       {n:'BATTERY CONTAINER',c:'#2266bb', lw:2,    dash:'',    fill:'#ddeeff',  alpha:.9,  hatch:null},
+  mv_transformer:{n:'MV TRANSFORMER',   c:'#444466', lw:2,    dash:'',    fill:'#eeeef8',  alpha:.9,  hatch:null},
+  pcs:           {n:'PCS/INVERTER',     c:'#cc6600', lw:2,    dash:'',    fill:'#fff8ee',  alpha:.9,  hatch:null},
+  substation:    {n:'SUBSTATION',       c:'#333366', lw:2,    dash:'',    fill:'#f0f0ff',  alpha:.9,  hatch:null},
+  relay:         {n:'PROTECTION RELAY', c:'#228833', lw:1.5,  dash:'',    fill:'#eeffee',  alpha:.9,  hatch:null},
+  scada:         {n:'SCADA/EMS',        c:'#554488', lw:1.5,  dash:'',    fill:'#f0eeff',  alpha:.9,  hatch:null},
+  vcb:           {n:'VCB',              c:'#cc2222', lw:1.5,  dash:'',    fill:'none',     alpha:1,   hatch:null},
+  busbar:        {n:'BUSBAR',           c:'#888888', lw:3,    dash:'',    fill:'#888888',  alpha:.8,  hatch:null},
+  meter:         {n:'SMART METER',      c:'#228866', lw:1.5,  dash:'',    fill:'#eeffee',  alpha:.9,  hatch:null},
+  cable:         {n:'HV CABLE',         c:'#cc6600', lw:2,    dash:'',    fill:'none',     alpha:1,   hatch:null},
+  annotation:    {n:'ANNOTATION',       c:'#222222', lw:1,    dash:'',    fill:'#222222',  alpha:1,   hatch:null},
+  dimension:     {n:'DIMENSION',        c:'#ddaa00', lw:.8,   dash:'',    fill:'none',     alpha:1,   hatch:null},
 };
 
-// ═══════════════════════════════════════════════
+// ─────────────────────────────────────────────
 //  STATE
-// ═══════════════════════════════════════════════
-let tool = 'select';
-let activeLayer = 'site_boundary';
-let objects = [];          // all drawing objects
-let selected = null;
-let idN = 0;
-let undoStack = [], redoStack = [];
+// ─────────────────────────────────────────────
+let tool = 'sel', activeLyr = 'site_boundary';
+let objs = [], selId = null, idN = 0;
+let undoStk = [], redoStk = [];
+let zoom = 1, snapOn = true, gridOn = true, snapSz = 20;
+let isPan = false, panSX = 0, panSY = 0, panOX = 0, panOY = 0;
+let drawing = false, dpts = [], dStart = null, tmpPt = null;
 
-// Pan/zoom
-let vpX = 0, vpY = 0, vpZoom = 0.55;
-let isPan = false, panSX = 0, panSY = 0;
+const NS = 'http://www.w3.org/2000/svg';
+const svg = () => document.getElementById('main-svg');
+const lObj  = () => document.getElementById('l-objects');
+const lTemp = () => document.getElementById('l-temp');
+const lSel  = () => document.getElementById('l-sel');
+const lGrid = () => document.getElementById('l-grid');
+const lSheet= () => document.getElementById('l-sheet');
 
-// Drawing state
-let isDrawing = false;
-let drawPoints = [];        // current polyline/polygon points
-let drawStart = null;       // rect/circle start
-let snapOn = true;
-let gridOn = true;
-let snapSize = 20;          // snap to 20 SVG units
-
-// Title block data
-let tbData = {};
-
-// Revision rows
-let revData = [
-  {rev:'A', desc:'PRELIMINARY', by:'XX', date:'XXXX/X/XX'},
-  {rev:'B', desc:'', by:'', date:''},
-  {rev:'C', desc:'', by:'', date:''},
-  {rev:'D', desc:'', by:'', date:''},
-  {rev:'E', desc:'', by:'', date:''},
-];
-
-// ═══════════════════════════════════════════════
-//  DEFS — hatch patterns
-// ═══════════════════════════════════════════════
-const SVG_NS = 'http://www.w3.org/2000/svg';
-
-function initSVG() {
-  const svg = document.getElementById('drawing-svg');
-  const w = SHEET_W, h = SHEET_H;
-  svg.setAttribute('width', w * vpZoom);
-  svg.setAttribute('height', h * vpZoom);
-  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-  svg.style.transform = `translate(${vpX}px,${vpY}px)`;
-
-  // Defs
-  const defs = document.createElementNS(SVG_NS,'defs');
-
-  // Hatch patterns
-  const patterns = [
-    {id:'hatch-veg',  bg:'#88cc44', lines:[{x1:0,y1:0,x2:10,y2:10},{x1:-2,y1:8,x2:2,y2:12}], stroke:'#558822', sw:0.8},
-    {id:'hatch-hz',   bg:'#4499cc', lines:[{x1:0,y1:3,x2:10,y2:3},{x1:0,y1:7,x2:10,y2:7}], stroke:'#2266aa', sw:0.7},
-    {id:'hatch-diag', bg:'#cc7733', lines:[{x1:0,y1:0,x2:10,y2:10},{x1:0,y1:5,x2:5,y2:10},{x1:5,y1:0,x2:10,y2:5}], stroke:'#884400', sw:0.7},
-    {id:'hatch-diag2',bg:'#dd3333', lines:[{x1:0,y1:0,x2:8,y2:8},{x1:0,y1:4,x2:4,y2:8},{x1:4,y1:0,x2:8,y2:4}], stroke:'#880000', sw:0.7},
-  ];
-  patterns.forEach(pd => {
-    const pat = document.createElementNS(SVG_NS,'pattern');
-    pat.setAttribute('id', pd.id);
-    pat.setAttribute('width','10'); pat.setAttribute('height','10');
-    pat.setAttribute('patternUnits','userSpaceOnUse');
-    const bg = document.createElementNS(SVG_NS,'rect');
-    bg.setAttribute('width','10'); bg.setAttribute('height','10'); bg.setAttribute('fill',pd.bg); bg.setAttribute('opacity','0.5');
-    pat.appendChild(bg);
-    pd.lines.forEach(l => {
-      const line = document.createElementNS(SVG_NS,'line');
-      line.setAttribute('x1',l.x1);line.setAttribute('y1',l.y1);line.setAttribute('x2',l.x2);line.setAttribute('y2',l.y2);
-      line.setAttribute('stroke',pd.stroke);line.setAttribute('stroke-width',pd.sw);
-      pat.appendChild(line);
-    });
-    defs.appendChild(pat);
-  });
-
-  // Arrow marker for dimensions
-  const mark = document.createElementNS(SVG_NS,'marker');
-  mark.setAttribute('id','dim-arrow');mark.setAttribute('viewBox','0 0 10 10');
-  mark.setAttribute('refX','5');mark.setAttribute('refY','5');
-  mark.setAttribute('markerWidth','6');mark.setAttribute('markerHeight','6');
-  mark.setAttribute('orient','auto-start-reverse');
-  const marrowPath = document.createElementNS(SVG_NS,'path');
-  marrowPath.setAttribute('d','M0 0 L10 5 L0 10 Z'); marrowPath.setAttribute('fill','#cc9900');
-  mark.appendChild(marrowPath);
-  defs.appendChild(mark);
-
-  svg.appendChild(defs);
-
-  // Layers
-  ['grid-layer','sheet-layer','draw-layer','temp-layer','sel-layer'].forEach(id => {
-    const g = document.createElementNS(SVG_NS,'g');
-    g.setAttribute('id',id); svg.appendChild(g);
-  });
-
-  drawSheet();
-  drawGrid();
+// ─────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────
+window.addEventListener('load', () => {
+  resizeSVG();
+  buildSheet();
+  buildGrid();
   buildRevRows();
-  updateTitleBlock();
+  updateTB();
+  fitView();
+  pickLayer('site_boundary','poly');
+});
+window.addEventListener('resize', () => { resizeSVG(); });
+
+function resizeSVG() {
+  const s = svg();
+  s.setAttribute('width',  SW);
+  s.setAttribute('height', SH);
+  s.setAttribute('viewBox', `0 0 ${SW} ${SH}`);
 }
 
-// ═══════════════════════════════════════════════
-//  SHEET — template background
-// ═══════════════════════════════════════════════
-function drawSheet() {
-  const layer = document.getElementById('sheet-layer');
-  layer.innerHTML = '';
-  const W = SHEET_W, H = SHEET_H;
+// ─────────────────────────────────────────────
+//  SHEET TEMPLATE
+// ─────────────────────────────────────────────
+function e(tag, attrs, text) {
+  const el = document.createElementNS(NS, tag);
+  if (attrs) Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, v));
+  if (text !== undefined) el.textContent = text;
+  return el;
+}
 
-  function el(tag, attrs, text) {
-    const e = document.createElementNS(SVG_NS, tag);
-    Object.entries(attrs).forEach(([k,v]) => e.setAttribute(k,v));
-    if(text) e.textContent = text;
-    return e;
-  }
+function buildSheet() {
+  const L = lSheet(); L.innerHTML = '';
 
   // White sheet background
-  layer.appendChild(el('rect',{x:0,y:0,width:W,height:H,fill:'#ffffff'}));
+  L.appendChild(e('rect',{x:0,y:0,width:SW,height:SH,fill:'#ffffff'}));
 
-  // Outer border
-  layer.appendChild(el('rect',{x:10,y:10,width:W-20,height:H-20,fill:'none',stroke:'#000',
-    'stroke-width':'1.5'}));
+  // Outer thick border
+  L.appendChild(e('rect',{x:12,y:12,width:SW-24,height:SH-24,fill:'none',stroke:'#000','stroke-width':'2'}));
 
-  // Inner border (drawing area)
-  layer.appendChild(el('rect',{x:DRAW_X1,y:DRAW_Y1,width:DRAW_W,height:DRAW_H,fill:'#f8f9fa',stroke:'#000','stroke-width':'0.8'}));
+  // Drawing area (light fill so it's distinct)
+  L.appendChild(e('rect',{x:DA_X1,y:DA_Y1,width:DA_W,height:DA_H,fill:'#f9fafb',stroke:'#000','stroke-width':'0.8'}));
 
-  // Copyright line at top
-  const cText = 'THIS DRAWING IS THE PROPERTY OF SUNSTRIPE, Inc. ANY REPRODUCTION IN PART OR AS A WHOLE WITHOUT THE WRITTEN PERMISSION OF SUNSTRIPE, Inc IS PROHIBITED.';
-  layer.appendChild(el('text',{x:DRAW_X1+4,y:DRAW_Y1-6,
-    'font-size':'5','font-family':'Arial','fill':'#000','font-weight':'bold'},cText));
+  // Top copyright text
+  L.appendChild(e('text',{x:DA_X1+4,y:DA_Y1-5,'font-size':'5.5','font-family':'Arial','font-weight':'bold',fill:'#000'},
+    'THIS DRAWING IS THE PROPERTY OF SUNSTRIPE, Inc. ANY REPRODUCTION IN PART OR AS A WHOLE WITHOUT THE WRITTEN PERMISSION OF SUNSTRIPE, Inc IS PROHIBITED.'));
 
-  // Bottom note
-  layer.appendChild(el('text',{x:W/2,y:H-MARGIN+10,'text-anchor':'middle',
-    'font-size':'7','font-family':'Arial','fill':'#000','font-weight':'bold',
-    'font-style':'italic'},'FOR INFORMATION PURPOSES ONLY - NOT FOR CONSTRUCTION'));
+  // Bottom disclaimer
+  L.appendChild(e('text',{x:SW/2,y:SH-MB+14,'text-anchor':'middle','font-size':'7','font-family':'Arial',
+    'font-weight':'bold','font-style':'italic',fill:'#000'},'FOR INFORMATION PURPOSES ONLY - NOT FOR CONSTRUCTION'));
 
-  // ─── TITLE BLOCK ───────────────────────────────
-  const TX = TB_X, TY = TB_Y, TW = TB_W - 6, TH = DRAW_H;
+  buildTitleBlock(L);
+}
 
-  // Title block outer border
-  layer.appendChild(el('rect',{x:TX,y:TY,width:TW,height:TH,fill:'#ffffff',stroke:'#000','stroke-width':'0.8'}));
+function buildTitleBlock(L) {
+  const X = TB_X, Y = TB_Y, W = TB_TW;
+  let cy = Y;
 
-  let cy = TY + 4;
+  // TB outer border
+  L.appendChild(e('rect',{x:X,y:Y,width:W,height:DA_H,fill:'#fff',stroke:'#000','stroke-width':'0.8'}));
 
-  // ── North Arrow ──────────────────────
-  const northH = 80;
-  layer.appendChild(el('rect',{x:TX,y:cy,width:TW,height:northH,fill:'#f0f0f0',stroke:'#000','stroke-width':'0.5'}));
-  const ncx = TX + TW/2, ncy = cy + northH/2;
-  layer.appendChild(el('circle',{cx:ncx,cy:ncy,r:28,fill:'none',stroke:'#000','stroke-width':'1'}));
-  // North arrow needle
-  layer.appendChild(el('polygon',{points:`${ncx},${ncy-24} ${ncx-8},${ncy+10} ${ncx},${ncy+4} ${ncx+8},${ncy+10}`,fill:'#000'}));
-  layer.appendChild(el('polygon',{points:`${ncx},${ncy-24} ${ncx-8},${ncy+10} ${ncx},${ncy+4}`,fill:'#ffffff',stroke:'#000','stroke-width':'0.5'}));
-  // N label
-  layer.appendChild(el('text',{x:ncx,y:ncy-30,'text-anchor':'middle','font-size':'12','font-family':'Arial','font-weight':'bold','fill':'#000'},'N'));
-  cy += northH;
+  // ── North Arrow section ─────────────────────
+  const NAH = 90;
+  L.appendChild(e('rect',{x:X,y:cy,width:W,height:NAH,fill:'#f5f5f5',stroke:'#bbb','stroke-width':'.4'}));
+  // Circle
+  const NCX = X+W/2, NCY = cy+NAH/2, NR = 32;
+  L.appendChild(e('circle',{cx:NCX,cy:NCY,r:NR,fill:'none',stroke:'#000','stroke-width':'1.2'}));
+  // Needle – black half
+  const nPts = `${NCX},${NCY-NR+3} ${NCX-9},${NCY+12} ${NCX},${NCY+6} ${NCX+9},${NCY+12}`;
+  L.appendChild(e('polygon',{points:nPts,fill:'#000'}));
+  // White left half overlay
+  const nW = `${NCX},${NCY-NR+3} ${NCX-9},${NCY+12} ${NCX},${NCY+6}`;
+  L.appendChild(e('polygon',{points:nW,fill:'#fff',stroke:'#000','stroke-width':'.5'}));
+  // N text
+  L.appendChild(e('text',{x:NCX,y:NCY-NR-5,'text-anchor':'middle','font-size':'14','font-family':'Arial','font-weight':'bold',fill:'#000'},'N'));
+  cy += NAH;
+  L.appendChild(e('line',{x1:X,y1:cy,x2:X+W,y2:cy,stroke:'#000','stroke-width':'.8'}));
 
-  // Separator
-  layer.appendChild(el('line',{x1:TX,y1:cy,x2:TX+TW,y2:cy,stroke:'#000','stroke-width':'0.8'}));
+  // ── LEGENDS header ───────────────────────────
+  const LHH = 16;
+  L.appendChild(e('rect',{x:X,y:cy,width:W,height:LHH,fill:'#e8e8e8'}));
+  L.appendChild(e('text',{x:X+W/2,y:cy+11,'text-anchor':'middle','font-size':'8.5',
+    'font-family':'Arial','font-weight':'bold',fill:'#000'},'LEGENDS'));
+  cy += LHH;
 
-  // ── Legends ──────────────────────────
-  const legHeader = 14;
-  layer.appendChild(el('rect',{x:TX,y:cy,width:TW,height:legHeader,fill:'#e8e8e8',stroke:'#000','stroke-width':'0.5'}));
-  layer.appendChild(el('text',{x:TX+TW/2,y:cy+10,'text-anchor':'middle','font-size':'8','font-family':'Arial','font-weight':'bold','fill':'#000'},'LEGENDS'));
-  cy += legHeader;
-
-  const legendItems = [
-    {sym:'line-solid-red', text:'SITE BOUNDARY'},
-    {sym:'line-dash',      text:'FENCE'},
-    {sym:'fill-veg',       text:'VEGETATION'},
-    {sym:'fill-wet',       text:'WETLANDS'},
-    {sym:'fill-pond',      text:'STORM WATER POND'},
-    {sym:'fill-fireroad',  text:'FIRE BATTERY ACCESS ROAD'},
-    {sym:'fill-road',      text:'ACCESS ROAD'},
-    {sym:'gate-sym',       text:'ACCESS GATE'},
-    {sym:'fill-batt',      text:'BATTERY CONTAINER'},
-    {sym:'fill-mvt',       text:'MV TRANSFORMER'},
-    {sym:'fill-fire',      text:'FIRE STAGING AREA'},
+  // ── Legend rows ──────────────────────────────
+  const legItems = [
+    {sym:'sb',   label:'SITE BOUNDARY'},
+    {sym:'fence',label:'FENCE'},
+    {sym:'veg',  label:'VEGETATION'},
+    {sym:'wet',  label:'WETLANDS'},
+    {sym:'pond', label:'STORM WATER POND'},
+    {sym:'fire', label:'FIRE BATTERY ACCESS ROAD'},
+    {sym:'road', label:'ACCESS ROAD'},
+    {sym:'gate', label:'ACCESS GATE'},
+    {sym:'batt', label:'BATTERY CONTAINER'},
+    {sym:'mvt',  label:'MV TRANSFORMER'},
+    {sym:'fstg', label:'FIRE STAGING AREA'},
   ];
-  const legRowH = 16;
-  legendItems.forEach(item => {
-    layer.appendChild(el('rect',{x:TX,y:cy,width:TW,height:legRowH,fill:'none',stroke:'#ccc','stroke-width':'0.3'}));
-    const symW = 40;
-    // Draw symbol
-    drawLegendSym(layer, item.sym, TX+2, cy+2, symW-4, legRowH-4, el);
-    // Text
-    layer.appendChild(el('text',{x:TX+symW+3,y:cy+10,'font-size':'6.5','font-family':'Arial','fill':'#000'},item.text));
-    cy += legRowH;
+  const LRH = 18;
+  const symW = 46, gap = 5;
+  legItems.forEach(item => {
+    L.appendChild(e('rect',{x:X,y:cy,width:W,height:LRH,fill:'none',stroke:'#ddd','stroke-width':'.3'}));
+    drawLegSym(L, item.sym, X+3, cy+2, symW, LRH-4);
+    L.appendChild(e('text',{x:X+symW+gap+3,y:cy+LRH/2+3,'font-size':'7',
+      'font-family':'Arial',fill:'#000'},item.label));
+    cy += LRH;
   });
-  layer.appendChild(el('line',{x1:TX,y1:cy,x2:TX+TW,y2:cy,stroke:'#000','stroke-width':'0.8'}));
+  L.appendChild(e('line',{x1:X,y1:cy,x2:X+W,y2:cy,stroke:'#000','stroke-width':'.8'}));
 
-  // ── Project Name ──────────────────────
-  const projH = 80;
-  const projectBox = el('g',{id:'tb-proj-block'});
-  projectBox.appendChild(el('rect',{x:TX,y:cy,width:TW,height:projH,fill:'#ffffff',stroke:'#000','stroke-width':'0.5'}));
-  projectBox.appendChild(el('text',{id:'tb-svg-project',x:TX+TW/2,y:cy+28,'text-anchor':'middle',
-    'font-size':'14','font-family':'Arial','font-weight':'bold','fill':'#000'},'PROJECT NAME'));
-  projectBox.appendChild(el('text',{id:'tb-svg-design',x:TX+TW/2,y:cy+46,'text-anchor':'middle',
-    'font-size':'12','font-family':'Arial','font-weight':'bold','fill':'#000'},'30% DESIGN'));
-  projectBox.appendChild(el('text',{id:'tb-svg-client',x:TX+TW/2,y:cy+60,'text-anchor':'middle',
-    'font-size':'7','font-family':'Arial','fill':'#555'},'CLIENT NAME'));
-  projectBox.appendChild(el('text',{id:'tb-svg-ref',x:TX+TW/2,y:cy+70,'text-anchor':'middle',
-    'font-size':'7','font-family':'Arial','fill':'#555'},'US_PROJECT_REF'));
-  layer.appendChild(projectBox);
-  cy += projH;
-  layer.appendChild(el('line',{x1:TX,y1:cy,x2:TX+TW,y2:cy,stroke:'#000','stroke-width':'0.8'}));
+  // ── Project name block ───────────────────────
+  const PNH = 88;
+  L.appendChild(e('rect',{x:X,y:cy,width:W,height:PNH,fill:'#fff',stroke:'#bbb','stroke-width':'.4'}));
+  L.appendChild(e('text',{id:'tb-pname',x:X+W/2,y:cy+32,'text-anchor':'middle',
+    'font-size':'15','font-family':'Arial','font-weight':'bold',fill:'#000'},'PROJECT NAME'));
+  L.appendChild(e('text',{id:'tb-pdesign',x:X+W/2,y:cy+52,'text-anchor':'middle',
+    'font-size':'12','font-family':'Arial','font-weight':'bold',fill:'#000'},'30% DESIGN'));
+  L.appendChild(e('text',{id:'tb-pclient',x:X+W/2,y:cy+67,'text-anchor':'middle',
+    'font-size':'7.5','font-family':'Arial',fill:'#444'},'CLIENT NAME'));
+  L.appendChild(e('text',{id:'tb-pref',x:X+W/2,y:cy+80,'text-anchor':'middle',
+    'font-size':'7','font-family':'Arial',fill:'#666'},'US_PROJECT_REF'));
+  cy += PNH;
+  L.appendChild(e('line',{x1:X,y1:cy,x2:X+W,y2:cy,stroke:'#000','stroke-width':'.8'}));
 
-  // ── Revision Table ──────────────────────
-  const revH = 12;
-  // Header
-  layer.appendChild(el('rect',{x:TX,y:cy,width:TW,height:revH+2,fill:'#e8e8e8'}));
-  ['REV','DESCRIPTION','BY','DATE'].forEach((h,i) => {
-    const rx = TX + [0,18,TW-50,TW-28][i];
-    const rw = [18,TW-68,28,28][i];
-    layer.appendChild(el('rect',{x:rx,y:cy,width:rw,height:revH+2,fill:'none',stroke:'#888','stroke-width':'0.4'}));
-    layer.appendChild(el('text',{x:rx+rw/2,y:cy+9,'text-anchor':'middle','font-size':'6','font-family':'Arial','font-weight':'bold','fill':'#000'},h));
+  // ── Revision table ───────────────────────────
+  const RVHH = 14, RVRH = 13;
+  L.appendChild(e('rect',{x:X,y:cy,width:W,height:RVHH,fill:'#e8e8e8'}));
+  const rcols = [{t:'REV',w:22},{t:'DESCRIPTION',w:W-100},{t:'BY',w:30},{t:'DATE',w:48}];
+  let rx = X;
+  rcols.forEach(col => {
+    L.appendChild(e('rect',{x:rx,y:cy,width:col.w,height:RVHH,fill:'none',stroke:'#bbb','stroke-width':'.4'}));
+    L.appendChild(e('text',{x:rx+col.w/2,y:cy+10,'text-anchor':'middle',
+      'font-size':'6.5','font-family':'Arial','font-weight':'bold',fill:'#000'},col.t));
+    rx += col.w;
   });
-  cy += revH + 2;
-  // Data rows
-  const revBlockG = el('g',{id:'tb-svg-revs'});
-  revData.forEach((row, ri) => {
-    const ry = cy + ri*(revH+1);
-    ['rev','desc','by','date'].forEach((k,i) => {
-      const rx2 = TX + [0,18,TW-50,TW-28][i];
-      const rw2 = [18,TW-68,28,28][i];
-      revBlockG.appendChild(el('rect',{x:rx2,y:ry,width:rw2,height:revH,'fill':'none',stroke:'#ccc','stroke-width':'0.3'}));
-      revBlockG.appendChild(el('text',{id:`tb-svg-rev${ri}-${k}`,x:rx2+3,y:ry+8,'font-size':'5.5','font-family':'Arial','fill':'#000'},row[k]||''));
+  cy += RVHH;
+  const REVS = ['A','B','C','D','E'];
+  REVS.forEach((rev,ri) => {
+    const RY = cy;
+    L.appendChild(e('rect',{x:X,y:RY,width:W,height:RVRH,fill:'none',stroke:'#ddd','stroke-width':'.3'}));
+    let rx2 = X;
+    rcols.forEach((col,ci) => {
+      L.appendChild(e('rect',{x:rx2,y:RY,width:col.w,height:RVRH,fill:'none',stroke:'#ddd','stroke-width':'.3'}));
+      const vals = [rev,'','',''];
+      if (vals[ci]) {
+        L.appendChild(e('text',{id:`tb-rev${ri}-${ci}`,x:rx2+col.w/2,y:RY+9,'text-anchor':'middle',
+          'font-size':'6','font-family':'Arial',fill:'#000'},vals[ci]));
+      } else {
+        L.appendChild(e('text',{id:`tb-rev${ri}-${ci}`,x:rx2+3,y:RY+9,
+          'font-size':'6','font-family':'Arial',fill:'#000'},''));
+      }
+      rx2 += col.w;
     });
+    cy += RVRH;
   });
-  layer.appendChild(revBlockG);
-  cy += revData.length*(revH+1) + 4;
-  layer.appendChild(el('line',{x1:TX,y1:cy,x2:TX+TW,y2:cy,stroke:'#000','stroke-width':'0.8'}));
+  L.appendChild(e('line',{x1:X,y1:cy,x2:X+W,y2:cy,stroke:'#000','stroke-width':'.8'}));
 
-  // ── SunStripe Branding ──────────────────
-  const brandH = 46;
-  const brandG = el('g',{});
-  brandG.appendChild(el('rect',{x:TX,y:cy,width:TW,height:brandH,fill:'#ffffff',stroke:'#000','stroke-width':'0.5'}));
-  brandG.appendChild(el('text',{x:TX+TW/2,y:cy+20,'text-anchor':'middle',
-    'font-size':'15','font-family':'Arial','font-weight':'bold','fill':'#dd2200'},'SunStripe'));
-  brandG.appendChild(el('text',{x:TX+TW/2,y:cy+30,'text-anchor':'middle',
-    'font-size':'6','font-family':'Arial','fill':'#444'},'Trusted Clean Energy Partners'));
-  brandG.appendChild(el('text',{x:TX+TW/2,y:cy+40,'text-anchor':'middle',
-    'font-size':'5.5','font-family':'Arial','fill':'#444'},'6363 N State Highway 161, Ste 250 Irving, TX 75038'));
-  layer.appendChild(brandG);
-  cy += brandH;
-  layer.appendChild(el('line',{x1:TX,y1:cy,x2:TX+TW,y2:cy,stroke:'#000','stroke-width':'0.8'}));
+  // ── SunStripe brand ──────────────────────────
+  const BRH = 50;
+  L.appendChild(e('rect',{x:X,y:cy,width:W,height:BRH,fill:'#fff',stroke:'#bbb','stroke-width':'.4'}));
+  L.appendChild(e('text',{x:X+W/2,y:cy+22,'text-anchor':'middle',
+    'font-size':'16','font-family':'Arial','font-weight':'bold',fill:'#dd2200'},'SunStripe'));
+  L.appendChild(e('text',{x:X+W/2,y:cy+34,'text-anchor':'middle',
+    'font-size':'6.5','font-family':'Arial',fill:'#444'},'Trusted Clean Energy Partners'));
+  L.appendChild(e('text',{x:X+W/2,y:cy+45,'text-anchor':'middle',
+    'font-size':'6','font-family':'Arial',fill:'#555'},'6363 N State Highway 161, Ste 250 Irving, TX 75038'));
+  cy += BRH;
+  L.appendChild(e('line',{x1:X,y1:cy,x2:X+W,y2:cy,stroke:'#000','stroke-width':'.8'}));
 
-  // ── Sheet Name ──────────────────────────
-  const snH = 32;
-  const snG = el('g',{});
-  snG.appendChild(el('text',{x:TX+4,y:cy+10,'font-size':'6','font-family':'Arial','fill':'#000'},'SHEET NAME:'));
-  snG.appendChild(el('text',{id:'tb-svg-sheet-name',x:TX+TW/2,y:cy+24,'text-anchor':'middle',
-    'font-size':'9','font-family':'Arial','font-weight':'bold','fill':'#000'},'SITE PLAN'));
-  layer.appendChild(snG);
-  cy += snH;
-  layer.appendChild(el('line',{x1:TX,y1:cy,x2:TX+TW,y2:cy,stroke:'#000','stroke-width':'0.5'}));
+  // ── Sheet name ───────────────────────────────
+  L.appendChild(e('text',{x:X+4,y:cy+12,'font-size':'7','font-family':'Arial','font-weight':'bold',fill:'#000'},'SHEET NAME:'));
+  L.appendChild(e('text',{id:'tb-sname',x:X+W/2,y:cy+28,'text-anchor':'middle',
+    'font-size':'10','font-family':'Arial','font-weight':'bold',fill:'#000'},'CIVIL SITE PLAN'));
+  cy += 38;
+  L.appendChild(e('line',{x1:X,y1:cy,x2:X+W,y2:cy,stroke:'#bbb','stroke-width':'.4'}));
 
-  // ── Lat/Long ──────────────────────────
-  layer.appendChild(el('text',{x:TX+4,y:cy+10,'font-size':'6','font-family':'Arial','fill':'#000'},'LAT/LONG:'));
-  layer.appendChild(el('text',{id:'tb-svg-latlong',x:TX+50,y:cy+10,'font-size':'6','font-family':'Arial','fill':'#000'},'XX.XX / -XX.XX'));
-  cy += 14;
-  layer.appendChild(el('line',{x1:TX,y1:cy,x2:TX+TW,y2:cy,stroke:'#000','stroke-width':'0.5'}));
+  // ── Lat/Long ─────────────────────────────────
+  L.appendChild(e('text',{x:X+4,y:cy+12,'font-size':'6.5','font-family':'Arial',fill:'#000'},'LAT/LONG:'));
+  L.appendChild(e('text',{id:'tb-ll',x:X+58,y:cy+12,'font-size':'6.5','font-family':'Arial',fill:'#000'},'33.0000 / -84.0000'));
+  cy += 18;
+  L.appendChild(e('line',{x1:X,y1:cy,x2:X+W,y2:cy,stroke:'#bbb','stroke-width':'.4'}));
 
-  // ── DRWN/REVW/APPRVD/SIZE ──────────────
-  const cols4 = [{l:'DRWN',w:TW*0.22},{l:'REVW',w:TW*0.22},{l:'APPRVD',w:TW*0.28},{l:'SIZE',w:TW*0.28}];
-  let cx4 = TX;
-  cols4.forEach(col => {
-    layer.appendChild(el('rect',{x:cx4,y:cy,width:col.w,height:20,fill:'none',stroke:'#888','stroke-width':'0.4'}));
-    layer.appendChild(el('text',{x:cx4+col.w/2,y:cy+8,'text-anchor':'middle','font-size':'5.5','font-family':'Arial','font-weight':'bold','fill':'#000'},col.l));
-    cx4 += col.w;
+  // ── DRWN / REVW / APPRVD / SIZE ──────────────
+  const DRW_H = 22, DRW_COLS = [{l:'DRWN',w:W*.22},{l:'REVW',w:W*.22},{l:'APPRVD',w:W*.28},{l:'SIZE',w:W*.28}];
+  let dcx = X;
+  DRW_COLS.forEach(col => {
+    L.appendChild(e('rect',{x:dcx,y:cy,width:col.w,height:DRW_H,fill:'none',stroke:'#ccc','stroke-width':'.4'}));
+    L.appendChild(e('text',{x:dcx+col.w/2,y:cy+9,'text-anchor':'middle',
+      'font-size':'6.5','font-family':'Arial','font-weight':'bold',fill:'#000'},col.l));
+    dcx += col.w;
   });
-  cy += 10;
-  let cx5 = TX;
-  const initIds = ['drwn','revw','apprvd'];
-  cols4.forEach((col,i) => {
-    const val = i < 3 ? (document.getElementById(`tb-${initIds[i]}`)?.value||'XX') : '11"X17"';
-    layer.appendChild(el('text',{id:i<3?`tb-svg-${initIds[i]}`:'',x:cx5+col.w/2,y:cy+10,
-      'text-anchor':'middle','font-size':'6','font-family':'Arial','fill':'#000'},val));
-    cx5 += col.w;
+  cy += DRW_H/2;
+  let dcx2 = X;
+  const dwIDs = ['tb-drwn','tb-revw','tb-apprvd',''];
+  DRW_COLS.forEach((col,i) => {
+    if(dwIDs[i]) L.appendChild(e('text',{id:dwIDs[i],x:dcx2+col.w/2,y:cy+10,'text-anchor':'middle',
+      'font-size':'7','font-family':'Arial',fill:'#000'},i<3?'XX':'11"X17"'));
+    else L.appendChild(e('text',{x:dcx2+col.w/2,y:cy+10,'text-anchor':'middle',
+      'font-size':'7','font-family':'Arial',fill:'#000'},'11"X17"'));
+    dcx2 += col.w;
   });
-  cy += 10;
-  layer.appendChild(el('line',{x1:TX,y1:cy,x2:TX+TW,y2:cy,stroke:'#000','stroke-width':'0.8'}));
+  cy += DRW_H/2;
+  L.appendChild(e('line',{x1:X,y1:cy,x2:X+W,y2:cy,stroke:'#000','stroke-width':'.8'}));
 
-  // ── Sheet No ──────────────────────────
-  layer.appendChild(el('text',{x:TX+4,y:cy+10,'font-size':'6','font-family':'Arial','fill':'#000'},'SHEET:'));
-  layer.appendChild(el('text',{id:'tb-svg-sheet-no',x:TX+TW/2,y:cy+TH-cy+TY-4,
-    'text-anchor':'middle','font-size':'16','font-family':'Arial','font-weight':'bold','fill':'#000'},'C-001'));
+  // ── Sheet No ─────────────────────────────────
+  L.appendChild(e('text',{x:X+4,y:cy+12,'font-size':'6.5','font-family':'Arial',fill:'#000'},'SHEET:'));
+  L.appendChild(e('text',{id:'tb-sno',x:X+W/2,y:DA_Y1+DA_H-16,'text-anchor':'middle',
+    'font-size':'20','font-family':'Arial','font-weight':'bold',fill:'#000'},'S-01'));
 
-  // Scale bar in drawing area
-  drawScaleBar(layer, el);
+  // ── Scale bar in drawing area ─────────────────
+  buildScaleBar(L);
 }
 
-function drawLegendSym(layer, sym, x, y, w, h, el) {
-  const mx = x + w/2, my = y + h/2;
+function buildScaleBar(L) {
+  const sbX = DA_X1 + 20, sbY = DA_Y2 - 28;
+  L.appendChild(e('text',{x:sbX,y:sbY-3,'font-size':'7','font-family':'Arial','font-weight':'bold',fill:'#000','id':'tb-scale-txt'},'SCALE  1:1000'));
+  // 5 alternating blocks × 30 units = 150m
+  for (let i=0;i<5;i++) {
+    L.appendChild(e('rect',{x:sbX+i*30,y:sbY,width:30,height:9,
+      fill:i%2===0?'#000':'#fff',stroke:'#000','stroke-width':'.6'}));
+  }
+  ['0m','30m','60m','90m','120m','150m'].forEach((l,i) => {
+    L.appendChild(e('text',{x:sbX+i*30,y:sbY+19,'text-anchor':'middle',
+      'font-size':'6','font-family':'Arial',fill:'#000'},l));
+  });
+}
+
+function drawLegSym(L, sym, x, y, w, h) {
+  const mx=x+w/2, my=y+h/2;
+  const R = (tag,attrs) => L.appendChild(e(tag,attrs));
   switch(sym) {
-    case 'line-solid-red':
-      layer.appendChild(el('line',{x1:x,y1:my,x2:x+w,y2:my,stroke:'#ff3333','stroke-width':'2.5'}));
+    case 'sb':    R('rect',{x,y,width:w,height:h,fill:'none',stroke:'#ff3333','stroke-width':'2.5'}); break;
+    case 'fence': R('line',{x1:x,y1:my,x2:x+w,y2:my,stroke:'#333','stroke-width':'1.5','stroke-dasharray':'5,3'});
+      [x+4,x+w/2,x+w-4].forEach(lx=>{R('line',{x1:lx,y1:y,x2:lx,y2:y+h,stroke:'#333','stroke-width':'1'});}); break;
+    case 'veg':   R('rect',{x,y,width:w,height:h,fill:'url(#hVeg)',stroke:'#558822','stroke-width':'.6'}); break;
+    case 'wet':   R('rect',{x,y,width:w,height:h,fill:'url(#hWet)',stroke:'#2266aa','stroke-width':'.6'}); break;
+    case 'pond':  R('rect',{x,y,width:w,height:h,fill:'#2266aa',opacity:'.65'}); break;
+    case 'fire':  R('rect',{x,y,width:w,height:h,fill:'url(#hFire)',stroke:'#884400','stroke-width':'.6'}); break;
+    case 'road':  R('rect',{x,y,width:w,height:h,fill:'#aa9966',opacity:'.85'}); break;
+    case 'gate':
+      R('line',{x1:x,y1:my,x2:mx-6,y2:my,stroke:'#444','stroke-width':'1.5'});
+      R('line',{x1:mx+6,y1:my,x2:x+w,y2:my,stroke:'#444','stroke-width':'1.5'});
+      R('path',{d:`M${mx-6} ${y+2} L${mx} ${my} L${mx+6} ${y+2}`,fill:'none',stroke:'#444','stroke-width':'1.5','stroke-linejoin':'round'});
       break;
-    case 'line-dash':
-      layer.appendChild(el('line',{x1:x,y1:my,x2:x+w,y2:my,stroke:'#000','stroke-width':'1.5','stroke-dasharray':'5,3'}));
-      [x+2,x+w/2-2,x+w-4].forEach(lx => {
-        layer.appendChild(el('line',{x1:lx,y1:y,x2:lx,y2:y+h,stroke:'#000','stroke-width':'0.8'}));
-      });
-      break;
-    case 'fill-veg':
-      layer.appendChild(el('rect',{x,y,width:w,height:h,fill:'url(#hatch-veg)',stroke:'#558822','stroke-width':'0.5'}));
-      break;
-    case 'fill-wet':
-      layer.appendChild(el('rect',{x,y,width:w,height:h,fill:'url(#hatch-hz)',stroke:'#2266aa','stroke-width':'0.5'}));
-      break;
-    case 'fill-pond':
-      layer.appendChild(el('rect',{x,y,width:w,height:h,fill:'#2266aa',opacity:'0.7'}));
-      break;
-    case 'fill-fireroad':
-      layer.appendChild(el('rect',{x,y,width:w,height:h,fill:'url(#hatch-diag)',stroke:'#884400','stroke-width':'0.5'}));
-      break;
-    case 'fill-road':
-      layer.appendChild(el('rect',{x,y,width:w,height:h,fill:'#aa9966',opacity:'0.8'}));
-      break;
-    case 'gate-sym':
-      layer.appendChild(el('line',{x1:x,y1:my,x2:x+w*0.3,y2:my,stroke:'#000','stroke-width':'1.5'}));
-      layer.appendChild(el('line',{x1:x+w*0.7,y1:my,x2:x+w,y2:my,stroke:'#000','stroke-width':'1.5'}));
-      layer.appendChild(el('path',{d:`M${x+w*0.3} ${my-h/3} L${mx} ${my} L${x+w*0.7} ${my-h/3}`,fill:'none',stroke:'#000','stroke-width':'1.5','stroke-linejoin':'round'}));
-      break;
-    case 'fill-batt':
-      layer.appendChild(el('rect',{x,y,width:w,height:h,fill:'#ddeeff',stroke:'#3388cc','stroke-width':'1.5'}));
-      break;
-    case 'fill-mvt':
-      layer.appendChild(el('rect',{x,y,width:w,height:h,fill:'#eeeef8',stroke:'#555577','stroke-width':'1.5'}));
-      break;
-    case 'fill-fire':
-      layer.appendChild(el('rect',{x,y,width:w,height:h,fill:'url(#hatch-diag2)',stroke:'#880000','stroke-width':'0.5'}));
-      break;
+    case 'batt':  R('rect',{x,y,width:w,height:h,fill:'#ddeeff',stroke:'#2266bb','stroke-width':'1.5'}); break;
+    case 'mvt':   R('rect',{x,y,width:w,height:h,fill:'#eeeef8',stroke:'#444466','stroke-width':'1.5'}); break;
+    case 'fstg':  R('rect',{x,y,width:w,height:h,fill:'url(#hFire)',stroke:'#aa0000','stroke-width':'1'}); break;
   }
 }
 
-function drawScaleBar(layer, el) {
-  // Scale bar at bottom of drawing area
-  const sbY = DRAW_Y2 - 20;
-  const sbX = DRAW_X1 + 20;
-  const sbLen = 120; // 120 units at current scale
-  layer.appendChild(el('text',{x:sbX,y:sbY-2,'font-size':'6','font-family':'Arial','fill':'#000'},'SCALE 1:1000'));
-  layer.appendChild(el('rect',{x:sbX,y:sbY,width:sbLen,height:8,fill:'#fff',stroke:'#000','stroke-width':'0.8'}));
-  [0,1,2,3,4].forEach(i => {
-    layer.appendChild(el('rect',{x:sbX+i*30,y:sbY,width:30,height:8,fill:i%2===0?'#000':'#fff',stroke:'#000','stroke-width':'0.5'}));
-  });
-  ['0','30','60','90','120'].forEach((label,i) => {
-    layer.appendChild(el('text',{x:sbX+i*30,y:sbY+16,'text-anchor':'middle','font-size':'5','font-family':'Arial','fill':'#000'},label+'m'));
-  });
-}
-
-// ═══════════════════════════════════════════════
+// ─────────────────────────────────────────────
 //  GRID
-// ═══════════════════════════════════════════════
-function drawGrid() {
-  const layer = document.getElementById('grid-layer');
-  layer.innerHTML = '';
+// ─────────────────────────────────────────────
+function buildGrid() {
+  const L = lGrid(); L.innerHTML = '';
   if (!gridOn) return;
-
-  const gs = snapSize; // minor grid
-  const gm = gs * 5;  // major grid
-
-  // Minor grid
-  for (let x = DRAW_X1; x <= DRAW_X2; x += gs) {
-    const l = document.createElementNS(SVG_NS,'line');
-    l.setAttribute('x1',x); l.setAttribute('y1',DRAW_Y1);
-    l.setAttribute('x2',x); l.setAttribute('y2',DRAW_Y2);
-    l.setAttribute('stroke','#dde2e8'); l.setAttribute('stroke-width','0.3');
-    layer.appendChild(l);
+  const minor = snapSz, major = snapSz*5;
+  for(let x=DA_X1;x<=DA_X2;x+=minor){
+    const isMaj = (x-DA_X1)%major===0;
+    L.appendChild(e('line',{x1:x,y1:DA_Y1,x2:x,y2:DA_Y2,
+      stroke:isMaj?'#c8d0d8':'#dde2e8','stroke-width':isMaj?'.5':'.3'}));
   }
-  for (let y = DRAW_Y1; y <= DRAW_Y2; y += gs) {
-    const l = document.createElementNS(SVG_NS,'line');
-    l.setAttribute('x1',DRAW_X1); l.setAttribute('y1',y);
-    l.setAttribute('x2',DRAW_X2); l.setAttribute('y2',y);
-    l.setAttribute('stroke','#dde2e8'); l.setAttribute('stroke-width','0.3');
-    layer.appendChild(l);
-  }
-  // Major grid
-  for (let x = DRAW_X1; x <= DRAW_X2; x += gm) {
-    const l = document.createElementNS(SVG_NS,'line');
-    l.setAttribute('x1',x); l.setAttribute('y1',DRAW_Y1);
-    l.setAttribute('x2',x); l.setAttribute('y2',DRAW_Y2);
-    l.setAttribute('stroke','#c8d0d8'); l.setAttribute('stroke-width','0.5');
-    layer.appendChild(l);
-  }
-  for (let y = DRAW_Y1; y <= DRAW_Y2; y += gm) {
-    const l = document.createElementNS(SVG_NS,'line');
-    l.setAttribute('x1',DRAW_X1); l.setAttribute('y1',y);
-    l.setAttribute('x2',DRAW_X2); l.setAttribute('y2',y);
-    l.setAttribute('stroke','#c8d0d8'); l.setAttribute('stroke-width','0.5');
-    layer.appendChild(l);
+  for(let y=DA_Y1;y<=DA_Y2;y+=minor){
+    const isMaj = (y-DA_Y1)%major===0;
+    L.appendChild(e('line',{x1:DA_X1,y1:y,x2:DA_X2,y2:y,
+      stroke:isMaj?'#c8d0d8':'#dde2e8','stroke-width':isMaj?'.5':'.3'}));
   }
 }
 
-// ═══════════════════════════════════════════════
+// ─────────────────────────────────────────────
+//  REVISION ROWS (right panel)
+// ─────────────────────────────────────────────
+const revData = [
+  {rev:'A',desc:'PRELIMINARY',by:'XX',date:'XXXX/X/XX'},
+  {rev:'B',desc:'',by:'',date:''},
+  {rev:'C',desc:'',by:'',date:''},
+  {rev:'D',desc:'',by:'',date:''},
+  {rev:'E',desc:'',by:'',date:''},
+];
+
+function buildRevRows() {
+  const cont = document.getElementById('rev-body');
+  cont.innerHTML = '';
+  revData.forEach((row,ri) => {
+    const div = document.createElement('div');
+    div.className = 'rev-grid';
+    div.innerHTML = `
+      <div class="rev-ltr">${row.rev}</div>
+      <input class="rev-in" value="${row.desc}" placeholder="Description" oninput="revChange(${ri},1,this.value)">
+      <input class="rev-in" value="${row.by}"   placeholder="BY"          oninput="revChange(${ri},2,this.value)" style="text-align:center">
+      <input class="rev-in" value="${row.date}" placeholder="YYYY/M/DD"   oninput="revChange(${ri},3,this.value)">`;
+    cont.appendChild(div);
+  });
+}
+
+function revChange(ri, ci, val) {
+  const keys = ['rev','desc','by','date'];
+  revData[ri][keys[ci]] = val;
+  const el = document.getElementById(`tb-rev${ri}-${ci}`);
+  if (el) el.textContent = val;
+}
+
+// ─────────────────────────────────────────────
+//  TITLE BLOCK LIVE UPDATE
+// ─────────────────────────────────────────────
+function updateTB() {
+  const g = id => document.getElementById(id)?.value ?? '';
+  const s = (id,val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+  s('tb-pname',  g('f-proj'));
+  s('tb-pdesign',g('f-pct')+'% DESIGN');
+  s('tb-pclient',g('f-client'));
+  s('tb-pref',   g('f-ref'));
+  s('tb-sname',  g('f-sname'));
+  s('tb-sno',    g('f-sno'));
+  s('tb-ll',     g('f-ll'));
+  s('tb-drwn',   g('f-drwn'));
+  s('tb-revw',   g('f-revw'));
+  s('tb-apprvd', g('f-apprvd'));
+  s('tb-scale-txt','SCALE  '+ g('f-scale'));
+  // Rev data from right panel
+  revData.forEach((row,ri) => {
+    s(`tb-rev${ri}-1`, row.desc);
+    s(`tb-rev${ri}-2`, row.by);
+    s(`tb-rev${ri}-3`, row.date);
+  });
+}
+
+// ─────────────────────────────────────────────
 //  COORDINATE TRANSFORM
-// ═══════════════════════════════════════════════
-function clientToSVG(clientX, clientY) {
-  const wrap = document.getElementById('canvas-wrap');
-  const rect = wrap.getBoundingClientRect();
-  const svgX = (clientX - rect.left - vpX) / vpZoom;
-  const svgY = (clientY - rect.top - vpY) / vpZoom;
-  return { x: svgX, y: svgY };
-}
-
-function snapPt(x, y) {
-  if (!snapOn) return {x, y};
+// ─────────────────────────────────────────────
+function svgCoord(clientX, clientY) {
+  const wrap = document.getElementById('canvas-scroll');
+  const r = document.getElementById('canvas-wrap').getBoundingClientRect();
   return {
-    x: Math.round(x / snapSize) * snapSize,
-    y: Math.round(y / snapSize) * snapSize
+    x: (clientX - r.left) / zoom,
+    y: (clientY - r.top) / zoom
   };
 }
 
-function inDrawArea(x, y) {
-  return x >= DRAW_X1 && x <= DRAW_X2 && y >= DRAW_Y1 && y <= DRAW_Y2;
-}
+function snap(v) { return snapOn ? Math.round(v/snapSz)*snapSz : v; }
+function snp(pt) { return {x:snap(pt.x), y:snap(pt.y)}; }
+function inDA(x,y){ return x>=DA_X1&&x<=DA_X2&&y>=DA_Y1&&y<=DA_Y2; }
 
-// ═══════════════════════════════════════════════
-//  TOOL MANAGEMENT
-// ═══════════════════════════════════════════════
+// ─────────────────────────────────────────────
+//  TOOL / LAYER
+// ─────────────────────────────────────────────
 function setTool(t) {
   tool = t;
-  isDrawing = false; drawPoints = []; drawStart = null;
-  clearTemp();
-  document.querySelectorAll('.tb-btn[id^=btn-]').forEach(b => b.classList.remove('active'));
-  const btn = document.getElementById('btn-' + t);
-  if (btn) btn.classList.add('active');
+  drawing = false; dpts = []; dStart = null; lTemp().innerHTML = '';
+  document.querySelectorAll('.btn[id^="b-"]').forEach(b => b.classList.remove('on'));
+  const btn = document.getElementById('b-'+t);
+  if (btn) btn.classList.add('on');
   document.getElementById('sb-tool').textContent = t.toUpperCase();
-  const wrap = document.getElementById('canvas-wrap');
-  wrap.className = t === 'select' ? 'mode-select' : '';
+  const s = svg();
+  s.className.baseVal = t==='sel'?'sel sel':t==='pan'?'pan':'';
 }
 
-function setActiveLayer(layerKey) {
-  activeLayer = layerKey;
-  document.querySelectorAll('.pal-item').forEach(el => el.classList.remove('active-layer'));
-  const pal = document.getElementById('pal-' + layerKey);
-  if (pal) pal.classList.add('active-layer');
-  document.getElementById('sb-layer').textContent = layerKey.toUpperCase().replace('_',' ');
-  // Auto-set tool based on layer draw mode
-  const ld = LAYERS[layerKey];
-  if (ld) {
-    const modeMap = {polyline:'polyline', polygon:'polygon', rect:'rect', text:'text', dim:'dim'};
-    const sugTool = modeMap[ld.drawMode] || 'polyline';
-    setTool(sugTool);
-  }
+function pickLayer(lyr, suggestTool) {
+  activeLyr = lyr;
+  document.querySelectorAll('.item').forEach(i => i.classList.remove('active'));
+  const p = document.getElementById('p-'+lyr);
+  if (p) p.classList.add('active');
+  document.getElementById('sb-layer').textContent = lyr;
+  if (suggestTool) setTool(suggestTool);
 }
 
-// ═══════════════════════════════════════════════
+// ─────────────────────────────────────────────
 //  MOUSE EVENTS
-// ═══════════════════════════════════════════════
-function onMouseDown(e) {
-  if (e.button === 1 || (e.button === 0 && e.altKey)) {
-    isPan = true; panSX = e.clientX - vpX; panSY = e.clientY - vpY;
-    return;
+// ─────────────────────────────────────────────
+function svgDown(ev) {
+  if (ev.button===1 || (ev.button===0 && ev.altKey)) {
+    isPan=true; panSX=ev.clientX; panSY=ev.clientY;
+    const wrap=document.getElementById('canvas-scroll');
+    panOX=wrap.scrollLeft; panOY=wrap.scrollTop; ev.preventDefault(); return;
   }
-  if (e.button !== 0) return;
+  if (ev.button!==0) return;
+  const raw = svgCoord(ev.clientX, ev.clientY);
+  const pt = snp(raw);
 
-  const raw = clientToSVG(e.clientX, e.clientY);
-  const pt = snapPt(raw.x, raw.y);
+  if (tool==='sel') { selectAt(raw.x, raw.y); return; }
+  if (!inDA(pt.x, pt.y)) return;
 
-  if (tool === 'select') {
-    handleSelect(raw.x, raw.y);
-    return;
-  }
-
-  if (!inDrawArea(pt.x, pt.y)) return;
-
-  if (tool === 'polyline' || tool === 'polygon') {
-    if (!isDrawing) {
-      isDrawing = true; drawPoints = [pt];
-    } else {
-      drawPoints.push(pt);
-      renderTempPolyline(pt);
-    }
-  } else if (tool === 'rect') {
-    if (!isDrawing) {
-      isDrawing = true; drawStart = pt;
-    }
-  } else if (tool === 'circle') {
-    if (!isDrawing) {
-      isDrawing = true; drawStart = pt;
-    }
-  } else if (tool === 'text') {
-    const label = prompt('Enter annotation text:');
-    if (label) {
-      saveUndo();
-      objects.push({id:'o'+(++idN), type:'text', layer:activeLayer, x:pt.x, y:pt.y, text:label});
-      renderAll();
-    }
-  } else if (tool === 'dim') {
-    if (!isDrawing) {
-      isDrawing = true; drawStart = pt;
-    }
+  if (tool==='poly') {
+    if (!drawing) { drawing=true; dpts=[pt]; }
+    else dpts.push(pt);
+  } else if (tool==='rect' || tool==='circle') {
+    if (!drawing) { drawing=true; dStart=pt; }
+  } else if (tool==='line') {
+    if (!drawing) { drawing=true; dpts=[pt]; }
+    else dpts.push(pt);
+  } else if (tool==='dim') {
+    if (!drawing) { drawing=true; dStart=pt; }
+  } else if (tool==='text') {
+    const txt = prompt('Enter label text:');
+    if (txt) { saveU(); objs.push({id:'o'+(++idN),type:'text',lyr:activeLyr,x:pt.x,y:pt.y,text:txt}); renderAll(); }
   }
 }
 
-function onMouseMove(e) {
-  const raw = clientToSVG(e.clientX, e.clientY);
-  const pt = snapPt(raw.x, raw.y);
-
-  // Update coordinate display
-  document.getElementById('coord-display').textContent =
-    `X: ${(pt.x - DRAW_X1).toFixed(0)}m   Y: ${(DRAW_Y2 - pt.y).toFixed(0)}m`;
-
-  // Snap indicator
-  if (snapOn && inDrawArea(raw.x, raw.y)) {
-    document.getElementById('snap-indicator').textContent = `●`;
-  } else {
-    document.getElementById('snap-indicator').textContent = '';
-  }
-
+function svgMove(ev) {
   if (isPan) {
-    vpX = e.clientX - panSX; vpY = e.clientY - panSY;
-    document.getElementById('drawing-svg').style.transform = `translate(${vpX}px,${vpY}px)`;
+    const wrap=document.getElementById('canvas-scroll');
+    wrap.scrollLeft = panOX-(ev.clientX-panSX);
+    wrap.scrollTop  = panOY-(ev.clientY-panSY);
     return;
   }
+  const raw = svgCoord(ev.clientX, ev.clientY);
+  const pt = snp(raw);
+  document.getElementById('coord').textContent =
+    `X: ${(pt.x-DA_X1).toFixed(0)}m   Y: ${(DA_Y2-pt.y).toFixed(0)}m   Scale: ${document.getElementById('f-scale')?.value||'1:1000'}`;
+  if (!drawing) return;
 
-  if (!isDrawing) return;
-  clearTemp();
+  lTemp().innerHTML='';
+  const ld = LD[activeLyr]||LD.site_boundary;
 
-  if (tool === 'polyline' || tool === 'polygon') {
-    renderTempPolylinePreview(pt);
-  } else if (tool === 'rect' && drawStart) {
-    renderTempRect(drawStart, pt);
-  } else if (tool === 'circle' && drawStart) {
-    renderTempCircle(drawStart, pt);
-  } else if (tool === 'dim' && drawStart) {
-    renderTempDim(drawStart, pt);
+  if ((tool==='poly'||tool==='line') && dpts.length>0) {
+    dpts.forEach((p,i)=>{ if(i>0) drawTmpLine(dpts[i-1],p,ld); });
+    drawTmpLine(dpts[dpts.length-1], pt, ld, true);
+    addSnapDot(pt.x, pt.y);
+  } else if ((tool==='rect') && dStart) {
+    const tmp = document.createElementNS(NS,'rect');
+    tmp.setAttribute('x',Math.min(dStart.x,pt.x)); tmp.setAttribute('y',Math.min(dStart.y,pt.y));
+    tmp.setAttribute('width',Math.abs(pt.x-dStart.x)); tmp.setAttribute('height',Math.abs(pt.y-dStart.y));
+    tmp.setAttribute('fill', ld.hatch?`url(#${ld.hatch})`:(ld.fill==='none'?'none':ld.fill));
+    tmp.setAttribute('fill-opacity', ld.alpha);
+    tmp.setAttribute('stroke',ld.c); tmp.setAttribute('stroke-width',ld.lw);
+    tmp.setAttribute('stroke-dasharray','8,4'); tmp.setAttribute('opacity','.8');
+    lTemp().appendChild(tmp);
+    addSnapDot(pt.x, pt.y);
+    // Show size
+    const W2=Math.abs(pt.x-dStart.x), H2=Math.abs(pt.y-dStart.y);
+    const tx=document.createElementNS(NS,'text');
+    tx.setAttribute('x',(dStart.x+pt.x)/2); tx.setAttribute('y',Math.min(dStart.y,pt.y)-5);
+    tx.setAttribute('text-anchor','middle'); tx.setAttribute('font-size','10');
+    tx.setAttribute('font-family','Arial'); tx.setAttribute('fill','#000'); tx.setAttribute('font-weight','bold');
+    tx.textContent = `${W2.toFixed(0)}m × ${H2.toFixed(0)}m`;
+    lTemp().appendChild(tx);
+  } else if (tool==='circle' && dStart) {
+    const r=Math.sqrt((pt.x-dStart.x)**2+(pt.y-dStart.y)**2);
+    const c=document.createElementNS(NS,'circle');
+    c.setAttribute('cx',dStart.x);c.setAttribute('cy',dStart.y);c.setAttribute('r',r);
+    c.setAttribute('fill','none');c.setAttribute('stroke',ld.c);c.setAttribute('stroke-width',ld.lw);
+    c.setAttribute('stroke-dasharray','8,4');
+    lTemp().appendChild(c);
+  } else if (tool==='dim' && dStart) {
+    drawTmpDim(dStart, pt);
   }
 }
 
-function onMouseUp(e) {
-  if (isPan) { isPan = false; return; }
-  if (!isDrawing) return;
+function svgUp(ev) {
+  if (isPan) { isPan=false; return; }
+  if (!drawing || ev.button!==0) return;
+  const raw = svgCoord(ev.clientX, ev.clientY);
+  const pt = snp(raw);
 
-  const raw = clientToSVG(e.clientX, e.clientY);
-  const pt = snapPt(raw.x, raw.y);
-
-  if (tool === 'rect' && drawStart) {
-    if (Math.abs(pt.x - drawStart.x) > 2 && Math.abs(pt.y - drawStart.y) > 2) {
-      saveUndo();
-      objects.push({id:'o'+(++idN), type:'rect', layer:activeLayer,
-        x:Math.min(drawStart.x,pt.x), y:Math.min(drawStart.y,pt.y),
-        w:Math.abs(pt.x-drawStart.x), h:Math.abs(pt.y-drawStart.y)});
+  if (tool==='rect' && dStart) {
+    if (Math.abs(pt.x-dStart.x)>4 && Math.abs(pt.y-dStart.y)>4) {
+      saveU();
+      objs.push({id:'o'+(++idN),type:'rect',lyr:activeLyr,
+        x:Math.min(dStart.x,pt.x),y:Math.min(dStart.y,pt.y),
+        w:Math.abs(pt.x-dStart.x),h:Math.abs(pt.y-dStart.y)});
       renderAll();
     }
-    isDrawing = false; drawStart = null; clearTemp();
-  } else if (tool === 'circle' && drawStart) {
-    const r = Math.sqrt((pt.x-drawStart.x)**2+(pt.y-drawStart.y)**2);
-    if (r > 2) {
-      saveUndo();
-      objects.push({id:'o'+(++idN), type:'circle', layer:activeLayer,
-        cx:drawStart.x, cy:drawStart.y, r});
+    drawing=false; dStart=null; lTemp().innerHTML='';
+  } else if (tool==='circle' && dStart) {
+    const r=Math.sqrt((pt.x-dStart.x)**2+(pt.y-dStart.y)**2);
+    if (r>4) { saveU(); objs.push({id:'o'+(++idN),type:'circle',lyr:activeLyr,cx:dStart.x,cy:dStart.y,r}); renderAll(); }
+    drawing=false; dStart=null; lTemp().innerHTML='';
+  } else if (tool==='dim' && dStart) {
+    if (Math.abs(pt.x-dStart.x)>4||Math.abs(pt.y-dStart.y)>4) {
+      const dist=Math.sqrt((pt.x-dStart.x)**2+(pt.y-dStart.y)**2);
+      saveU(); objs.push({id:'o'+(++idN),type:'dim',lyr:'dimension',
+        x1:dStart.x,y1:dStart.y,x2:pt.x,y2:pt.y,val:dist.toFixed(1)+'m'});
       renderAll();
     }
-    isDrawing = false; drawStart = null; clearTemp();
-  } else if (tool === 'dim' && drawStart) {
-    saveUndo();
-    const dist = Math.sqrt((pt.x-drawStart.x)**2+(pt.y-drawStart.y)**2);
-    objects.push({id:'o'+(++idN), type:'dim', layer:'dimension',
-      x1:drawStart.x, y1:drawStart.y, x2:pt.x, y2:pt.y,
-      value: dist.toFixed(1)+'m'});
-    renderAll();
-    isDrawing = false; drawStart = null; clearTemp();
+    drawing=false; dStart=null; lTemp().innerHTML='';
   }
 }
 
-function onDblClick(e) {
-  if ((tool === 'polyline' || tool === 'polygon') && isDrawing && drawPoints.length >= 2) {
-    const raw = clientToSVG(e.clientX, e.clientY);
-    const pt = snapPt(raw.x, raw.y);
-    drawPoints.push(pt);
-    saveUndo();
-    const closed = tool === 'polygon' || LAYERS[activeLayer]?.closed;
-    objects.push({id:'o'+(++idN), type:'polyline', layer:activeLayer,
-      points:[...drawPoints], closed});
-    isDrawing = false; drawPoints = []; clearTemp();
-    renderAll();
+function svgDbl(ev) {
+  if (!drawing) return;
+  if ((tool==='poly'||tool==='line') && dpts.length>=2) {
+    const raw=svgCoord(ev.clientX,ev.clientY); const pt=snp(raw);
+    dpts.push(pt);
+    saveU();
+    objs.push({id:'o'+(++idN),type:'polyline',lyr:activeLyr,
+      pts:[...dpts],closed:(tool==='poly')});
+    drawing=false; dpts=[]; lTemp().innerHTML=''; renderAll();
   }
 }
 
-function onWheel(e) {
-  e.preventDefault();
-  const factor = e.deltaY < 0 ? 1.12 : 0.89;
-  const raw = clientToSVG(e.clientX, e.clientY);
-  vpZoom = Math.min(3, Math.max(0.15, vpZoom * factor));
-  const wrap = document.getElementById('canvas-wrap');
-  const rect = wrap.getBoundingClientRect();
-  vpX = e.clientX - rect.left - raw.x * vpZoom;
-  vpY = e.clientY - rect.top  - raw.y * vpZoom;
-  const svg = document.getElementById('drawing-svg');
-  svg.style.transform = `translate(${vpX}px,${vpY}px)`;
-  svg.setAttribute('width', SHEET_W * vpZoom);
-  svg.setAttribute('height', SHEET_H * vpZoom);
-  document.getElementById('sb-zoom').textContent = Math.round(vpZoom*100)+'%';
+function svgWheel(ev) {
+  ev.preventDefault();
+  const factor = ev.deltaY<0?1.12:0.89;
+  const raw = svgCoord(ev.clientX, ev.clientY);
+  zoom = Math.min(4, Math.max(.15, zoom*factor));
+  applyZoom(raw.x, raw.y, ev.clientX, ev.clientY);
 }
 
-// ═══════════════════════════════════════════════
-//  TEMP PREVIEW RENDERING
-// ═══════════════════════════════════════════════
-function clearTemp() {
-  document.getElementById('temp-layer').innerHTML = '';
+function svgDrop(ev) {
+  ev.preventDefault();
+  const lyr = ev.dataTransfer?.getData('text/plain') || window._dragLyr;
+  if (!lyr) return;
+  const raw=svgCoord(ev.clientX,ev.clientY); const pt=snp(raw);
+  if (!inDA(pt.x,pt.y)) return;
+  pickLayer(lyr, 'rect');
+  // Place with default size
+  const sizes = {battery:[80,40],mv_transformer:[60,40],pcs:[70,40],substation:[80,50],relay:[55,40],scada:[70,45],meter:[45,45]};
+  const [dw,dh] = sizes[lyr]||[60,40];
+  saveU();
+  objs.push({id:'o'+(++idN),type:'rect',lyr,x:pt.x-dw/2,y:pt.y-dh/2,w:dw,h:dh});
+  renderAll();
 }
 
-function renderTempPolyline(pt) {}
-
-function renderTempPolylinePreview(pt) {
-  const tmpL = document.getElementById('temp-layer');
-  tmpL.innerHTML = '';
-  const ld = LAYERS[activeLayer] || LAYERS.site_boundary;
-  if (drawPoints.length > 0) {
-    // Committed segments
-    for (let i=0; i<drawPoints.length-1; i++) {
-      const l = document.createElementNS(SVG_NS,'line');
-      l.setAttribute('x1',drawPoints[i].x);l.setAttribute('y1',drawPoints[i].y);
-      l.setAttribute('x2',drawPoints[i+1].x);l.setAttribute('y2',drawPoints[i+1].y);
-      l.setAttribute('stroke',ld.color);l.setAttribute('stroke-width',ld.lw);
-      if(ld.dash)l.setAttribute('stroke-dasharray',ld.dash);
-      tmpL.appendChild(l);
-    }
-    // Rubber band
-    const last = drawPoints[drawPoints.length-1];
-    const l2 = document.createElementNS(SVG_NS,'line');
-    l2.setAttribute('x1',last.x);l2.setAttribute('y1',last.y);
-    l2.setAttribute('x2',pt.x);l2.setAttribute('y2',pt.y);
-    l2.setAttribute('stroke',ld.color);l2.setAttribute('stroke-width',ld.lw);
-    l2.setAttribute('stroke-dasharray','6,3');l2.setAttribute('opacity','0.7');
-    tmpL.appendChild(l2);
-    // Snap dot
-    addSnapDot(tmpL, pt.x, pt.y);
-  }
+// ─────────────────────────────────────────────
+//  TEMP DRAWING HELPERS
+// ─────────────────────────────────────────────
+function drawTmpLine(p1,p2,ld,dashed=false){
+  const l=document.createElementNS(NS,'line');
+  l.setAttribute('x1',p1.x);l.setAttribute('y1',p1.y);l.setAttribute('x2',p2.x);l.setAttribute('y2',p2.y);
+  l.setAttribute('stroke',ld.c);l.setAttribute('stroke-width',ld.lw);
+  l.setAttribute('stroke-dasharray',dashed?'8,4':(ld.dash||''));
+  lTemp().appendChild(l);
+}
+function drawTmpDim(p1,p2){
+  const l=document.createElementNS(NS,'line');
+  l.setAttribute('x1',p1.x);l.setAttribute('y1',p1.y);l.setAttribute('x2',p2.x);l.setAttribute('y2',p2.y);
+  l.setAttribute('stroke','#ddaa00');l.setAttribute('stroke-width','1');
+  l.setAttribute('marker-start','url(#arr-dim-rev)');l.setAttribute('marker-end','url(#arr-dim)');
+  lTemp().appendChild(l);
+  const dist=Math.sqrt((p2.x-p1.x)**2+(p2.y-p1.y)**2);
+  const t=document.createElementNS(NS,'text');
+  t.setAttribute('x',(p1.x+p2.x)/2);t.setAttribute('y',(p1.y+p2.y)/2-5);
+  t.setAttribute('text-anchor','middle');t.setAttribute('font-size','11');
+  t.setAttribute('font-family','Arial');t.setAttribute('fill','#ddaa00');t.setAttribute('font-weight','bold');
+  t.textContent=dist.toFixed(1)+'m'; lTemp().appendChild(t);
+}
+function addSnapDot(x,y){
+  const c=document.createElementNS(NS,'circle');
+  c.setAttribute('cx',x);c.setAttribute('cy',y);c.setAttribute('r','4');
+  c.setAttribute('fill','#ff4444');c.setAttribute('opacity','.8');
+  lTemp().appendChild(c);
 }
 
-function renderTempRect(start, end) {
-  const tmpL = document.getElementById('temp-layer');
-  const ld = LAYERS[activeLayer] || LAYERS.battery_container;
-  const r = document.createElementNS(SVG_NS,'rect');
-  r.setAttribute('x',Math.min(start.x,end.x)); r.setAttribute('y',Math.min(start.y,end.y));
-  r.setAttribute('width',Math.abs(end.x-start.x)); r.setAttribute('height',Math.abs(end.y-start.y));
-  r.setAttribute('fill', ld.fill==='none'?'none':ld.fill);
-  r.setAttribute('fill-opacity',ld.alpha);
-  r.setAttribute('stroke',ld.color); r.setAttribute('stroke-width',ld.lw);
-  r.setAttribute('stroke-dasharray','6,3');
-  tmpL.appendChild(r);
-  addSnapDot(tmpL, end.x, end.y);
-}
-
-function renderTempCircle(center, pt) {
-  const tmpL = document.getElementById('temp-layer');
-  const r = Math.sqrt((pt.x-center.x)**2+(pt.y-center.y)**2);
-  const c = document.createElementNS(SVG_NS,'circle');
-  c.setAttribute('cx',center.x);c.setAttribute('cy',center.y);c.setAttribute('r',r);
-  c.setAttribute('fill','none');c.setAttribute('stroke','#aaa');c.setAttribute('stroke-width','1');
-  c.setAttribute('stroke-dasharray','6,3');
-  tmpL.appendChild(c);
-}
-
-function renderTempDim(start, end) {
-  const tmpL = document.getElementById('temp-layer');
-  const dist = Math.sqrt((end.x-start.x)**2+(end.y-start.y)**2);
-  const mid = {x:(start.x+end.x)/2, y:(start.y+end.y)/2};
-  const l = document.createElementNS(SVG_NS,'line');
-  l.setAttribute('x1',start.x);l.setAttribute('y1',start.y);
-  l.setAttribute('x2',end.x);l.setAttribute('y2',end.y);
-  l.setAttribute('stroke','#cc9900');l.setAttribute('stroke-width','0.8');
-  l.setAttribute('marker-start','url(#dim-arrow)');l.setAttribute('marker-end','url(#dim-arrow)');
-  tmpL.appendChild(l);
-  const t = document.createElementNS(SVG_NS,'text');
-  t.setAttribute('x',mid.x);t.setAttribute('y',mid.y-4);t.setAttribute('text-anchor','middle');
-  t.setAttribute('font-size','8');t.setAttribute('font-family','Arial');t.setAttribute('fill','#cc9900');
-  t.textContent = dist.toFixed(1)+'m';
-  tmpL.appendChild(t);
-}
-
-function addSnapDot(layer, x, y) {
-  const c = document.createElementNS(SVG_NS,'circle');
-  c.setAttribute('cx',x);c.setAttribute('cy',y);c.setAttribute('r','3');
-  c.setAttribute('fill','#ff4444');c.setAttribute('opacity','0.8');
-  layer.appendChild(c);
-}
-
-// ═══════════════════════════════════════════════
+// ─────────────────────────────────────────────
 //  RENDER ALL OBJECTS
-// ═══════════════════════════════════════════════
+// ─────────────────────────────────────────────
 function renderAll() {
-  const layer = document.getElementById('draw-layer');
-  layer.innerHTML = '';
-  objects.forEach(obj => renderObject(obj, layer));
-  updateCountDisplay();
+  lObj().innerHTML='';
+  objs.forEach(obj => renderObj(obj));
+  document.getElementById('sb-objs').textContent = objs.length;
+  if (selId) highlightSel(selId);
 }
 
-function renderObject(obj, layer) {
-  const ld = LAYERS[obj.layer] || LAYERS.site_boundary;
-  const fillVal = getFill(ld);
+function renderObj(obj) {
+  const ld = LD[obj.lyr]||LD.site_boundary;
+  const fill = ld.hatch ? `url(#${ld.hatch})` : (ld.fill==='none'?'none':ld.fill);
 
-  if (obj.type === 'polyline') {
-    const el = document.createElementNS(SVG_NS, obj.closed ? 'polygon' : 'polyline');
-    const pts = obj.points.map(p=>p.x+','+p.y).join(' ');
-    el.setAttribute('points', pts);
-    el.setAttribute('fill', obj.closed ? fillVal : 'none');
-    if(obj.closed) el.setAttribute('fill-opacity', ld.alpha);
-    el.setAttribute('stroke', ld.color);
-    el.setAttribute('stroke-width', ld.lw);
-    if (ld.dash) el.setAttribute('stroke-dasharray', ld.dash);
-    el.setAttribute('data-id', obj.id);
-    el.style.cursor = 'pointer';
-    el.addEventListener('click', () => selectObject(obj.id));
-    layer.appendChild(el);
+  let el;
+  if (obj.type==='polyline') {
+    el = document.createElementNS(NS, obj.closed?'polygon':'polyline');
+    el.setAttribute('points', obj.pts.map(p=>`${p.x},${p.y}`).join(' '));
+    if (obj.closed) { el.setAttribute('fill',fill); el.setAttribute('fill-opacity',ld.alpha); }
+    else el.setAttribute('fill','none');
+    el.setAttribute('stroke',ld.c); el.setAttribute('stroke-width',ld.lw);
+    if(ld.dash) el.setAttribute('stroke-dasharray',ld.dash);
 
-    // Labels for equipment
-    if (obj.layer === 'battery_container' || obj.layer === 'mv_transformer') {
-      addLabel(layer, obj.points, obj.layer === 'battery_container' ? 'BESS' : 'MVT', ld.color);
+  } else if (obj.type==='rect') {
+    el = document.createElementNS(NS,'rect');
+    el.setAttribute('x',obj.x);el.setAttribute('y',obj.y);
+    el.setAttribute('width',obj.w);el.setAttribute('height',obj.h);
+    el.setAttribute('fill',fill);el.setAttribute('fill-opacity',ld.alpha);
+    el.setAttribute('stroke',ld.c);el.setAttribute('stroke-width',ld.lw);
+    if(ld.dash) el.setAttribute('stroke-dasharray',ld.dash);
+    // Inline label for equipment
+    const lbmap={battery:'BESS',mv_transformer:'MVT',pcs:'PCS',substation:'SUB',relay:'87T',scada:'EMS',meter:'KWH'};
+    if(lbmap[obj.lyr]){
+      const t=document.createElementNS(NS,'text');
+      t.setAttribute('x',obj.x+obj.w/2);t.setAttribute('y',obj.y+obj.h/2+3);
+      t.setAttribute('text-anchor','middle');t.setAttribute('font-size',Math.min(obj.h*.28,11));
+      t.setAttribute('font-family','Arial');t.setAttribute('fill',ld.c);t.setAttribute('font-weight','bold');
+      t.setAttribute('pointer-events','none');t.textContent=lbmap[obj.lyr];
+      lObj().appendChild(t);
     }
-  } else if (obj.type === 'rect') {
-    const r = document.createElementNS(SVG_NS,'rect');
-    r.setAttribute('x',obj.x); r.setAttribute('y',obj.y);
-    r.setAttribute('width',obj.w); r.setAttribute('height',obj.h);
-    r.setAttribute('fill', fillVal);
-    r.setAttribute('fill-opacity', ld.alpha);
-    r.setAttribute('stroke', ld.color); r.setAttribute('stroke-width', ld.lw);
-    r.setAttribute('data-id',obj.id);
-    r.style.cursor='pointer';
-    r.addEventListener('click',()=>selectObject(obj.id));
-    layer.appendChild(r);
-    // Label inside rect
-    const cx = obj.x + obj.w/2, cy = obj.y + obj.h/2;
-    const labMap = {battery_container:'BESS CONTAINER', mv_transformer:'MV TRANSFORMER', access_gate:'GATE', fire_staging:'FIRE STAGING'};
-    if (labMap[obj.layer]) {
-      const t = document.createElementNS(SVG_NS,'text');
-      t.setAttribute('x',cx);t.setAttribute('y',cy+3);t.setAttribute('text-anchor','middle');
-      t.setAttribute('font-size',Math.min(obj.h*0.2, 10));t.setAttribute('font-family','Arial');
-      t.setAttribute('fill',ld.color);t.setAttribute('font-weight','bold');
-      t.setAttribute('pointer-events','none');t.textContent=labMap[obj.layer];
-      layer.appendChild(t);
-    }
-  } else if (obj.type === 'circle') {
-    const c = document.createElementNS(SVG_NS,'circle');
-    c.setAttribute('cx',obj.cx);c.setAttribute('cy',obj.cy);c.setAttribute('r',obj.r);
-    c.setAttribute('fill',fillVal);c.setAttribute('fill-opacity',ld.alpha);
-    c.setAttribute('stroke',ld.color);c.setAttribute('stroke-width',ld.lw);
-    c.setAttribute('data-id',obj.id);c.style.cursor='pointer';
-    c.addEventListener('click',()=>selectObject(obj.id));
-    layer.appendChild(c);
-  } else if (obj.type === 'text') {
-    const t = document.createElementNS(SVG_NS,'text');
-    t.setAttribute('x',obj.x);t.setAttribute('y',obj.y);
-    t.setAttribute('font-size','12');t.setAttribute('font-family','Arial');
-    t.setAttribute('fill','#000');t.setAttribute('data-id',obj.id);
-    t.style.cursor='pointer';
-    t.textContent=obj.text;
-    t.addEventListener('click',()=>selectObject(obj.id));
-    layer.appendChild(t);
-  } else if (obj.type === 'dim') {
-    const mid = {x:(obj.x1+obj.x2)/2, y:(obj.y1+obj.y2)/2};
-    const l = document.createElementNS(SVG_NS,'line');
-    l.setAttribute('x1',obj.x1);l.setAttribute('y1',obj.y1);
-    l.setAttribute('x2',obj.x2);l.setAttribute('y2',obj.y2);
-    l.setAttribute('stroke','#cc9900');l.setAttribute('stroke-width','0.8');
-    l.setAttribute('marker-start','url(#dim-arrow)');l.setAttribute('marker-end','url(#dim-arrow)');
-    l.setAttribute('data-id',obj.id);l.style.cursor='pointer';
-    l.addEventListener('click',()=>selectObject(obj.id));
-    layer.appendChild(l);
-    // Extension lines
-    [[obj.x1,obj.y1],[obj.x2,obj.y2]].forEach(([ex,ey]) => {
-      const ext = document.createElementNS(SVG_NS,'line');
-      ext.setAttribute('x1',ex);ext.setAttribute('y1',ey-8);
-      ext.setAttribute('x2',ex);ext.setAttribute('y2',ey+8);
-      ext.setAttribute('stroke','#cc9900');ext.setAttribute('stroke-width','0.6');
-      layer.appendChild(ext);
+
+  } else if (obj.type==='circle') {
+    el = document.createElementNS(NS,'circle');
+    el.setAttribute('cx',obj.cx);el.setAttribute('cy',obj.cy);el.setAttribute('r',obj.r);
+    el.setAttribute('fill',fill);el.setAttribute('fill-opacity',ld.alpha);
+    el.setAttribute('stroke',ld.c);el.setAttribute('stroke-width',ld.lw);
+
+  } else if (obj.type==='text') {
+    el = document.createElementNS(NS,'text');
+    el.setAttribute('x',obj.x);el.setAttribute('y',obj.y);
+    el.setAttribute('font-size','12');el.setAttribute('font-family','Arial');
+    el.setAttribute('fill','#000');el.textContent=obj.text;
+
+  } else if (obj.type==='dim') {
+    const g=document.createElementNS(NS,'g');
+    const l=document.createElementNS(NS,'line');
+    l.setAttribute('x1',obj.x1);l.setAttribute('y1',obj.y1);l.setAttribute('x2',obj.x2);l.setAttribute('y2',obj.y2);
+    l.setAttribute('stroke','#ddaa00');l.setAttribute('stroke-width','1');
+    l.setAttribute('marker-start','url(#arr-dim-rev)');l.setAttribute('marker-end','url(#arr-dim)');
+    g.appendChild(l);
+    [[obj.x1,obj.y1],[obj.x2,obj.y2]].forEach(([ex,ey])=>{
+      const ext=document.createElementNS(NS,'line');
+      ext.setAttribute('x1',ex);ext.setAttribute('y1',ey-10);ext.setAttribute('x2',ex);ext.setAttribute('y2',ey+10);
+      ext.setAttribute('stroke','#ddaa00');ext.setAttribute('stroke-width','.8');g.appendChild(ext);
     });
-    const t = document.createElementNS(SVG_NS,'text');
-    t.setAttribute('x',mid.x);t.setAttribute('y',mid.y-6);t.setAttribute('text-anchor','middle');
-    t.setAttribute('font-size','9');t.setAttribute('font-family','Arial');t.setAttribute('fill','#cc9900');
-    t.setAttribute('font-weight','bold');t.textContent=obj.value;
-    layer.appendChild(t);
+    const t=document.createElementNS(NS,'text');
+    t.setAttribute('x',(obj.x1+obj.x2)/2);t.setAttribute('y',(obj.y1+obj.y2)/2-7);
+    t.setAttribute('text-anchor','middle');t.setAttribute('font-size','11');
+    t.setAttribute('font-family','Arial');t.setAttribute('fill','#ddaa00');t.setAttribute('font-weight','bold');
+    t.textContent=obj.val; g.appendChild(t);
+    g.setAttribute('data-id',obj.id); g.style.cursor='pointer';
+    g.addEventListener('click',()=>selectObj(obj.id));
+    lObj().appendChild(g); return;
+  }
+
+  if (el) {
+    el.setAttribute('data-id',obj.id); el.style.cursor='pointer';
+    el.addEventListener('click',()=>selectObj(obj.id));
+    lObj().appendChild(el);
   }
 }
 
-function getFill(ld) {
-  if(ld.fill==='none') return 'none';
-  const hatchMap = {veg:'url(#hatch-veg)', hz:'url(#hatch-hz)', diag:'url(#hatch-diag)', diag2:'url(#hatch-diag2)'};
-  if(ld.hatch && hatchMap[ld.hatch]) return hatchMap[ld.hatch];
-  return ld.fill;
-}
-
-function addLabel(layer, points, text, color) {
-  if (!points || points.length < 3) return;
-  let cx=0, cy=0;
-  points.forEach(p=>{cx+=p.x;cy+=p.y;});
-  cx/=points.length; cy/=points.length;
-  const t = document.createElementNS(SVG_NS,'text');
-  t.setAttribute('x',cx);t.setAttribute('y',cy+3);t.setAttribute('text-anchor','middle');
-  t.setAttribute('font-size','10');t.setAttribute('font-family','Arial');
-  t.setAttribute('fill',color);t.setAttribute('font-weight','bold');
-  t.setAttribute('pointer-events','none');t.textContent=text;
-  layer.appendChild(t);
-}
-
-// ═══════════════════════════════════════════════
+// ─────────────────────────────────────────────
 //  SELECTION
-// ═══════════════════════════════════════════════
-function handleSelect(x, y) {
-  // Check if clicking an existing object
-  const hit = objects.find(obj => hitTest(obj, x, y));
-  selectObject(hit ? hit.id : null);
+// ─────────────────────────────────────────────
+function selectAt(x,y) {
+  const hit = objs.slice().reverse().find(o=>hitTest(o,x,y));
+  selectObj(hit?hit.id:null);
 }
 
-function selectObject(id) {
-  selected = id;
-  const selLayer = document.getElementById('sel-layer');
-  selLayer.innerHTML = '';
-  if (!id) {
-    document.getElementById('props-empty').style.display='block';
-    document.getElementById('props-fields').style.display='none';
-    return;
-  }
-  const obj = objects.find(o=>o.id===id);
-  if (!obj) return;
-
-  // Highlight with bounding box
-  const bb = getBBox(obj);
-  if (bb) {
-    const r = document.createElementNS(SVG_NS,'rect');
-    r.setAttribute('x',bb.x-3);r.setAttribute('y',bb.y-3);
-    r.setAttribute('width',bb.w+6);r.setAttribute('height',bb.h+6);
-    r.setAttribute('fill','none');r.setAttribute('stroke','#ff9900');
-    r.setAttribute('stroke-width','1.5');r.setAttribute('stroke-dasharray','6,3');
-    r.setAttribute('pointer-events','none');
-    selLayer.appendChild(r);
-    // Corner handles
-    [[bb.x-3,bb.y-3],[bb.x+bb.w+3,bb.y-3],[bb.x-3,bb.y+bb.h+3],[bb.x+bb.w+3,bb.y+bb.h+3]].forEach(([hx,hy])=>{
-      const h = document.createElementNS(SVG_NS,'rect');
-      h.setAttribute('x',hx-3);h.setAttribute('y',hy-3);h.setAttribute('width','6');h.setAttribute('height','6');
-      h.setAttribute('fill','#ff9900');h.setAttribute('pointer-events','none');
-      selLayer.appendChild(h);
-    });
-  }
-
-  // Show properties
-  document.getElementById('props-empty').style.display='none';
-  const pf = document.getElementById('props-fields');
-  pf.style.display='block';
-  const ld = LAYERS[obj.layer];
-  pf.innerHTML = `
-    <div class="rp-field"><label class="rp-label">TYPE</label><span style="font-size:10px;color:var(--text)">${obj.type.toUpperCase()}</span></div>
-    <div class="rp-field"><label class="rp-label">LAYER</label><span style="font-size:10px;color:var(--accent)">${ld?.name||obj.layer}</span></div>
-    ${obj.type==='rect'?`<div class="rp-field"><label class="rp-label">SIZE</label><span style="font-size:10px;color:var(--text)">${Math.round(obj.w)}m × ${Math.round(obj.h)}m</span></div>`:'' }
-    ${obj.type==='text'?`<div class="rp-field"><label class="rp-label">TEXT</label><input class="rp-input" value="${obj.text}" oninput="updateObjProp('${obj.id}','text',this.value)"></div>`:''}
-    <button class="rp-input" style="margin-top:6px;cursor:pointer;color:#ff6b6b;background:rgba(255,107,107,0.1);border-color:rgba(255,107,107,0.3);" onclick="deleteSelected()">DELETE OBJECT</button>
-  `;
+function selectObj(id) {
+  selId=id; lSel().innerHTML='';
+  document.getElementById('props-body').innerHTML = id
+    ? buildProps(objs.find(o=>o.id===id)) : 'No selection';
+  if(!id) return;
+  highlightSel(id);
 }
 
-function hitTest(obj, x, y) {
-  const bb = getBBox(obj);
-  if (!bb) return false;
-  return x >= bb.x-5 && x <= bb.x+bb.w+5 && y >= bb.y-5 && y <= bb.y+bb.h+5;
+function highlightSel(id) {
+  lSel().innerHTML='';
+  const obj=objs.find(o=>o.id===id); if(!obj) return;
+  const bb=getBB(obj); if(!bb) return;
+  const pad=6;
+  const r=document.createElementNS(NS,'rect');
+  r.setAttribute('x',bb.x-pad);r.setAttribute('y',bb.y-pad);
+  r.setAttribute('width',bb.w+pad*2);r.setAttribute('height',bb.h+pad*2);
+  r.setAttribute('fill','none');r.setAttribute('stroke','#ff9900');r.setAttribute('stroke-width','1.5');
+  r.setAttribute('stroke-dasharray','8,4');r.setAttribute('pointer-events','none');
+  lSel().appendChild(r);
+  [[bb.x-pad,bb.y-pad],[bb.x+bb.w+pad,bb.y-pad],
+   [bb.x-pad,bb.y+bb.h+pad],[bb.x+bb.w+pad,bb.y+bb.h+pad]].forEach(([hx,hy])=>{
+    const h=document.createElementNS(NS,'rect');
+    h.setAttribute('x',hx-4);h.setAttribute('y',hy-4);h.setAttribute('width','8');h.setAttribute('height','8');
+    h.setAttribute('fill','#ff9900');h.setAttribute('pointer-events','none');
+    lSel().appendChild(h);
+  });
 }
 
-function getBBox(obj) {
-  if (obj.type === 'rect') return {x:obj.x, y:obj.y, w:obj.w, h:obj.h};
-  if (obj.type === 'circle') return {x:obj.cx-obj.r, y:obj.cy-obj.r, w:obj.r*2, h:obj.r*2};
-  if (obj.type === 'polyline' && obj.points?.length) {
-    const xs = obj.points.map(p=>p.x), ys = obj.points.map(p=>p.y);
+function buildProps(obj) {
+  if (!obj) return 'No selection';
+  const ld=LD[obj.lyr]||{n:obj.lyr};
+  let h=`<div style="margin-bottom:4px"><span style="color:#e8a020;font-size:9px">${ld.n}</span></div>`;
+  if(obj.type==='rect') h+=`<div style="font-size:9px">Size: <b>${Math.round(obj.w)}m × ${Math.round(obj.h)}m</b></div>`;
+  if(obj.type==='text') h+=`<input class="rp-in" value="${obj.text}" oninput="updateObjTxt('${obj.id}',this.value)" style="margin-top:4px">`;
+  h+=`<button onclick="delSel()" style="margin-top:8px;width:100%;padding:4px;background:rgba(255,68,85,.15);border:1px solid rgba(255,68,85,.3);border-radius:3px;color:#ff4455;font-size:9px;cursor:pointer;font-family:Courier New">DELETE OBJECT</button>`;
+  return h;
+}
+
+function updateObjTxt(id,val){ const o=objs.find(x=>x.id===id);if(o){o.text=val;renderAll();} }
+
+function hitTest(obj,x,y) {
+  const bb=getBB(obj); if(!bb) return false;
+  return x>=bb.x-8&&x<=bb.x+bb.w+8&&y>=bb.y-8&&y<=bb.y+bb.h+8;
+}
+
+function getBB(obj) {
+  if(obj.type==='rect') return{x:obj.x,y:obj.y,w:obj.w,h:obj.h};
+  if(obj.type==='circle') return{x:obj.cx-obj.r,y:obj.cy-obj.r,w:obj.r*2,h:obj.r*2};
+  if(obj.type==='polyline'&&obj.pts?.length){
+    const xs=obj.pts.map(p=>p.x),ys=obj.pts.map(p=>p.y);
     const x=Math.min(...xs),y=Math.min(...ys);
-    return {x, y, w:Math.max(...xs)-x, h:Math.max(...ys)-y};
+    return{x,y,w:Math.max(...xs)-x,h:Math.max(...ys)-y};
   }
-  if (obj.type === 'text') return {x:obj.x-2, y:obj.y-14, w:100, h:16};
-  if (obj.type === 'dim') {
+  if(obj.type==='text') return{x:obj.x,y:obj.y-14,w:100,h:16};
+  if(obj.type==='dim'){
     const x=Math.min(obj.x1,obj.x2),y=Math.min(obj.y1,obj.y2);
-    return {x, y, w:Math.abs(obj.x2-obj.x1)||10, h:Math.abs(obj.y2-obj.y1)||10};
+    return{x,y,w:Math.max(Math.abs(obj.x2-obj.x1),10),h:Math.max(Math.abs(obj.y2-obj.y1),10)};
   }
   return null;
 }
 
-// ═══════════════════════════════════════════════
-//  UNDO / REDO
-// ═══════════════════════════════════════════════
-function saveUndo() {
-  undoStack.push(JSON.stringify(objects));
-  if (undoStack.length > 50) undoStack.shift();
-  redoStack = [];
+// ─────────────────────────────────────────────
+//  UNDO / REDO / DELETE / CLEAR
+// ─────────────────────────────────────────────
+function saveU(){ undoStk.push(JSON.stringify(objs)); if(undoStk.length>60)undoStk.shift(); redoStk=[]; }
+function doUndo(){ if(!undoStk.length)return; redoStk.push(JSON.stringify(objs)); objs=JSON.parse(undoStk.pop()); selId=null;lSel().innerHTML='';selectObj(null);renderAll(); }
+function doRedo(){ if(!redoStk.length)return; undoStk.push(JSON.stringify(objs)); objs=JSON.parse(redoStk.pop()); renderAll(); }
+function delSel(){ if(!selId)return; saveU(); objs=objs.filter(o=>o.id!==selId); selId=null;lSel().innerHTML='';selectObj(null);renderAll(); }
+function clearAll(){ if(!confirm('Clear all drawing objects?'))return; saveU(); objs=[];selId=null;lSel().innerHTML='';selectObj(null);renderAll(); }
+
+// ─────────────────────────────────────────────
+//  ZOOM / PAN / FIT
+// ─────────────────────────────────────────────
+function applyZoom(svgX, svgY, clientX, clientY) {
+  const wrap=document.getElementById('canvas-wrap');
+  wrap.style.transform=`scale(${zoom})`;
+  wrap.style.transformOrigin='top left';
+  const scroll=document.getElementById('canvas-scroll');
+  scroll.scrollLeft = svgX*zoom - (clientX - scroll.getBoundingClientRect().left);
+  scroll.scrollTop  = svgY*zoom - (clientY - scroll.getBoundingClientRect().top);
+  document.getElementById('sb-zoom').textContent=Math.round(zoom*100)+'%';
 }
 
-function doUndo() {
-  if (!undoStack.length) return;
-  redoStack.push(JSON.stringify(objects));
-  objects = JSON.parse(undoStack.pop());
-  selected = null;
-  document.getElementById('sel-layer').innerHTML='';
-  renderAll();
+function zoomStep(f) {
+  zoom=Math.min(4,Math.max(.15,zoom*f));
+  document.getElementById('canvas-wrap').style.transform=`scale(${zoom})`;
+  document.getElementById('canvas-wrap').style.transformOrigin='top left';
+  document.getElementById('sb-zoom').textContent=Math.round(zoom*100)+'%';
 }
 
-function doRedo() {
-  if (!redoStack.length) return;
-  undoStack.push(JSON.stringify(objects));
-  objects = JSON.parse(redoStack.pop());
-  renderAll();
+function fitView() {
+  const area=document.getElementById('canvas-area');
+  const aw=area.clientWidth, ah=area.clientHeight;
+  zoom = Math.min(aw/SW, ah/SH)*0.95;
+  const wrap=document.getElementById('canvas-wrap');
+  wrap.style.transform=`scale(${zoom})`;
+  wrap.style.transformOrigin='top left';
+  // Centre scroll
+  const scroll=document.getElementById('canvas-scroll');
+  scroll.scrollLeft=(SW*zoom-aw)/2;
+  scroll.scrollTop=(SH*zoom-ah)/2;
+  document.getElementById('sb-zoom').textContent=Math.round(zoom*100)+'%';
+}
+function zoomFit(){ fitView(); }
+
+// ─────────────────────────────────────────────
+//  SNAP / GRID TOGGLE
+// ─────────────────────────────────────────────
+function toggleSnap(){
+  snapOn=!snapOn;
+  document.getElementById('b-snap').textContent='Snap '+(snapOn?'ON':'OFF');
+}
+function toggleGrid(){
+  gridOn=!gridOn;
+  document.getElementById('b-grid').textContent='Grid '+(gridOn?'ON':'OFF');
+  buildGrid();
 }
 
-function deleteSelected() {
-  if (!selected) return;
-  saveUndo();
-  objects = objects.filter(o=>o.id!==selected);
-  selected = null;
-  document.getElementById('sel-layer').innerHTML='';
-  selectObject(null);
-  renderAll();
-}
-
-function clearAll() {
-  if (!confirm('Clear all drawing objects?')) return;
-  saveUndo();
-  objects = []; selected = null;
-  document.getElementById('sel-layer').innerHTML='';
-  selectObject(null);
-  renderAll();
-}
-
-function updateObjProp(id, key, val) {
-  const obj = objects.find(o=>o.id===id);
-  if (obj) { obj[key]=val; renderAll(); }
-}
-
-// ═══════════════════════════════════════════════
-//  TITLE BLOCK UPDATE
-// ═══════════════════════════════════════════════
-function updateTitleBlock() {
-  const get = id => document.getElementById(id)?.value || '';
-  const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
-
-  set('tb-svg-project', get('tb-project'));
-  set('tb-svg-design', get('tb-design-pct') + '% DESIGN');
-  set('tb-svg-client', get('tb-client'));
-  set('tb-svg-ref', get('tb-ref'));
-  set('tb-svg-sheet-name', get('tb-sheet-name'));
-  set('tb-svg-sheet-no', get('tb-sheet-no'));
-  set('tb-svg-latlong', get('tb-latlong'));
-  set('tb-svg-drwn', get('tb-drwn'));
-  set('tb-svg-revw', get('tb-revw'));
-  set('tb-svg-apprvd', get('tb-apprvd'));
-
-  // Update revision rows
-  document.querySelectorAll('[id^="rev-input-"]').forEach(input => {
-    const parts = input.id.replace('rev-input-','').split('-');
-    const ri = parseInt(parts[0]);
-    const key = parts[1];
-    if (revData[ri]) {
-      revData[ri][key] = input.value;
-      const svgEl = document.getElementById(`tb-svg-rev${ri}-${key}`);
-      if (svgEl) svgEl.textContent = input.value;
-    }
-  });
-}
-
-function buildRevRows() {
-  const container = document.getElementById('rev-rows');
-  container.innerHTML = '';
-  revData.forEach((row, i) => {
-    const div = document.createElement('div');
-    div.className = 'rev-row';
-    div.innerHTML = `
-      <div style="font-size:9px;color:var(--accent);text-align:center;padding-top:4px">${row.rev}</div>
-      <input class="rev-cell" id="rev-input-${i}-desc" value="${row.desc}" oninput="updateTitleBlock()" placeholder="Description">
-      <input class="rev-cell" id="rev-input-${i}-by"   value="${row.by}"   oninput="updateTitleBlock()" placeholder="BY">
-      <input class="rev-cell" id="rev-input-${i}-date" value="${row.date}" oninput="updateTitleBlock()" placeholder="YYYY/M/DD">
-    `;
-    container.appendChild(div);
-  });
-}
-
-// ═══════════════════════════════════════════════
-//  ZOOM / PAN
-// ═══════════════════════════════════════════════
-function toggleSnap() {
-  snapOn = !snapOn;
-  document.getElementById('btn-snap').textContent = 'SNAP:'+(snapOn?'ON':'OFF');
-  document.getElementById('sb-snap').textContent = snapOn?'20m':'OFF';
-}
-
-function toggleGrid() {
-  gridOn = !gridOn;
-  document.getElementById('btn-grid').textContent = 'GRID:'+(gridOn?'ON':'OFF');
-  drawGrid();
-}
-
-function zoomFit() {
-  const wrap = document.getElementById('canvas-wrap');
-  const ww = wrap.clientWidth, wh = wrap.clientHeight;
-  const zx = ww / SHEET_W, zy = wh / SHEET_H;
-  vpZoom = Math.min(zx, zy) * 0.95;
-  vpX = (ww - SHEET_W*vpZoom)/2;
-  vpY = (wh - SHEET_H*vpZoom)/2;
-  const svg = document.getElementById('drawing-svg');
-  svg.style.transform = `translate(${vpX}px,${vpY}px)`;
-  svg.setAttribute('width', SHEET_W*vpZoom);
-  svg.setAttribute('height', SHEET_H*vpZoom);
-  document.getElementById('sb-zoom').textContent = Math.round(vpZoom*100)+'%';
-}
-
-function zoomIn() { fakeWheel(-1); }
-function zoomOut() { fakeWheel(1); }
-
-function fakeWheel(dir) {
-  const factor = dir < 0 ? 1.2 : 0.83;
-  const cx = SHEET_W/2, cy = SHEET_H/2;
-  vpZoom = Math.min(3, Math.max(0.15, vpZoom * factor));
-  const svg = document.getElementById('drawing-svg');
-  svg.style.transform = `translate(${vpX}px,${vpY}px)`;
-  svg.setAttribute('width', SHEET_W*vpZoom);
-  svg.setAttribute('height', SHEET_H*vpZoom);
-  document.getElementById('sb-zoom').textContent = Math.round(vpZoom*100)+'%';
-}
-
-function updateCountDisplay() {
-  document.getElementById('sb-count').textContent = objects.length;
-}
-
-// ═══════════════════════════════════════════════
-//  KEYBOARD SHORTCUTS
-// ═══════════════════════════════════════════════
-document.addEventListener('keydown', e => {
-  if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
-  const k = e.key.toLowerCase();
-  if(k==='v')setTool('select');
-  if(k==='p')setTool('polyline');
-  if(k==='r')setTool('rect');
-  if(k==='g')setTool('polygon');
-  if(k==='c')setTool('circle');
-  if(k==='t')setTool('text');
-  if(k==='d')setTool('dim');
-  if(k==='f')zoomFit();
-  if(k==='escape'){setTool('select');isDrawing=false;drawPoints=[];drawStart=null;clearTemp();}
-  if(k==='delete'||k==='backspace'){e.preventDefault();deleteSelected();}
-  if((e.ctrlKey||e.metaKey)&&k==='z'){e.preventDefault();doUndo();}
-  if((e.ctrlKey||e.metaKey)&&k==='y'){e.preventDefault();doRedo();}
+// ─────────────────────────────────────────────
+//  KEYBOARD
+// ─────────────────────────────────────────────
+document.addEventListener('keydown',ev=>{
+  if(['INPUT','TEXTAREA','SELECT'].includes(ev.target.tagName))return;
+  const k=ev.key.toLowerCase();
+  const km={'v':'sel','l':'line','r':'rect','p':'poly','c':'circle','t':'text','d':'dim','f':'fit'};
+  if(km[k]){ if(k==='f')fitView(); else setTool(km[k]); }
+  if(k==='escape'){drawing=false;dpts=[];dStart=null;lTemp().innerHTML='';setTool('sel');}
+  if(k==='delete'||k==='backspace'){ev.preventDefault();delSel();}
+  if((ev.ctrlKey||ev.metaKey)&&k==='z'){ev.preventDefault();doUndo();}
+  if((ev.ctrlKey||ev.metaKey)&&k==='y'){ev.preventDefault();doRedo();}
 });
 
-// ═══════════════════════════════════════════════
-//  DRAG & DROP from palette
-// ═══════════════════════════════════════════════
-let dragLayerKey = null;
-document.querySelectorAll('.pal-item').forEach(el => {
+// ─────────────────────────────────────────────
+//  DRAG FROM PALETTE
+// ─────────────────────────────────────────────
+document.querySelectorAll('.item').forEach(el=>{
   el.setAttribute('draggable','true');
-  el.addEventListener('dragstart', ev => {
-    dragLayerKey = el.id.replace('pal-','');
-    ev.dataTransfer?.setData('text/plain', dragLayerKey);
+  el.addEventListener('dragstart',ev=>{
+    window._dragLyr=el.id.replace('p-','');
+    ev.dataTransfer?.setData('text/plain',window._dragLyr);
   });
 });
 
-function onDrop(e) {
-  e.preventDefault();
-  const key = e.dataTransfer?.getData('text/plain') || dragLayerKey;
-  if (!key) return;
-  const raw = clientToSVG(e.clientX, e.clientY);
-  const pt = snapPt(raw.x, raw.y);
-  if (!inDrawArea(pt.x, pt.y)) return;
-  setActiveLayer(key);
-
-  // Auto-place rect-type components
-  const ld = LAYERS[key];
-  if (ld && (ld.drawMode === 'rect' || key === 'battery_container' || key === 'mv_transformer')) {
-    const defW = key==='battery_container'?80:key==='mv_transformer'?60:key==='access_gate'?40:60;
-    const defH = key==='battery_container'?40:key==='mv_transformer'?40:key==='access_gate'?30:40;
-    saveUndo();
-    objects.push({id:'o'+(++idN), type:'rect', layer:key,
-      x:pt.x-defW/2, y:pt.y-defH/2, w:defW, h:defH});
-    renderAll();
-  }
-}
-
-// ═══════════════════════════════════════════════
+// ─────────────────────────────────────────────
 //  EXPORT — SVG
-// ═══════════════════════════════════════════════
-function exportSVG() {
-  const svg = document.getElementById('drawing-svg');
-  const serializer = new XMLSerializer();
-  const svgStr = '<?xml version="1.0" encoding="UTF-8"?>\\n' + serializer.serializeToString(svg);
-  const blob = new Blob([svgStr], {type:'image/svg+xml'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = (document.getElementById('tb-project')?.value||'BESS_Site').replace(/\\s+/g,'_') + '_SitePlan.svg';
+// ─────────────────────────────────────────────
+function exportSVG(){
+  const s=svg();
+  const ser=new XMLSerializer();
+  const str='<?xml version="1.0" encoding="UTF-8"?>\n'+ser.serializeToString(s);
+  const blob=new Blob([str],{type:'image/svg+xml'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=(document.getElementById('f-proj')?.value||'BESS_Site').replace(/\s+/g,'_')+'_SitePlan.svg';
   a.click();
 }
 
-// ═══════════════════════════════════════════════
-//  EXPORT — DXF (AutoCAD compatible)
-// ═══════════════════════════════════════════════
-function exportDXF() {
-  const proj = document.getElementById('tb-project')?.value || 'BESS_PROJECT';
-  const scale = document.getElementById('tb-scale')?.value || '1:1000';
-  const scaleNum = parseInt(scale.split(':')[1]) || 1000;
+// ─────────────────────────────────────────────
+//  EXPORT — DXF
+// ─────────────────────────────────────────────
+function exportDXF(){
+  const proj=document.getElementById('f-proj')?.value||'BESS_PROJECT';
+  const scaleStr=document.getElementById('f-scale')?.value||'1:1000';
+  const scNum=parseInt(scaleStr.split(':')[1])||1000;
 
-  // DXF layer colors (ACI color codes)
-  const layerColors = {
-    site_boundary:8,fence:7,vegetation:3,wetlands:5,pond:5,
-    fire_road:1,access_road:2,access_gate:7,battery_container:5,
-    mv_transformer:6,fire_staging:1,annotation:7,dimension:2
-  };
+  const layerColorMap={site_boundary:1,fence:7,vegetation:3,wetlands:5,pond:5,
+    access_road:2,access_gate:7,fire_staging:1,battery:5,mv_transformer:6,
+    pcs:2,substation:6,relay:3,scada:4,vcb:1,busbar:7,meter:3,cable:2,
+    annotation:7,dimension:2};
 
-  let dxf = '';
-  // HEADER
-  dxf += '0\\nSECTION\\n2\\nHEADER\\n';
-  dxf += '9\\n$ACADVER\\n1\\nAC1021\\n'; // AutoCAD 2007
-  dxf += '9\\n$INSUNITS\\n70\\n6\\n'; // meters
-  dxf += '9\\n$MEASUREMENT\\n70\\n1\\n'; // metric
-  dxf += '0\\nENDSEC\\n';
-
-  // TABLES
-  dxf += '0\\nSECTION\\n2\\nTABLES\\n';
-  dxf += '0\\nTABLE\\n2\\nLAYER\\n70\\n'+Object.keys(LAYERS).length+'\\n';
-  Object.entries(LAYERS).forEach(([key, ld]) => {
-    dxf += `0\\nLAYER\\n2\\n${key.toUpperCase()}\\n70\\n0\\n62\\n${layerColors[key]||7}\\n6\\nCONTINUOUS\\n`;
+  let dxf='999\nDDE BESS Site Plan Export\n0\nSECTION\n2\nHEADER\n';
+  dxf+='9\n$ACADVER\n1\nAC1021\n9\n$INSUNITS\n70\n6\n9\n$MEASUREMENT\n70\n1\n';
+  dxf+='0\nENDSEC\n0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n70\n'+Object.keys(LD).length+'\n';
+  Object.entries(LD).forEach(([k,v])=>{
+    dxf+=`0\nLAYER\n2\n${k.toUpperCase()}\n70\n0\n62\n${layerColorMap[k]||7}\n6\nCONTINUOUS\n`;
   });
-  dxf += '0\\nENDTAB\\n0\\nENDSEC\\n';
+  dxf+='0\nENDTAB\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n';
 
-  // ENTITIES
-  dxf += '0\\nSECTION\\n2\\nENTITIES\\n';
+  const M=v=>(v*scNum/1000).toFixed(4);
+  const MY=v=>((SH-v)*scNum/1000).toFixed(4);
 
-  // Sheet border
-  const toReal = v => (v * scaleNum / 1000).toFixed(4);
-  const toRealY = v => ((SHEET_H - v) * scaleNum / 1000).toFixed(4); // flip Y
-
-  objects.forEach(obj => {
-    const layerName = obj.layer?.toUpperCase() || 'OBJECTS';
-    if (obj.type === 'polyline' || obj.type === 'polygon') {
-      dxf += `0\\nLWPOLYLINE\\n8\\n${layerName}\\n90\\n${obj.points.length}\\n70\\n${obj.closed?1:0}\\n`;
-      obj.points.forEach(p => {
-        dxf += `10\\n${toReal(p.x)}\\n20\\n${toRealY(p.y)}\\n`;
-      });
-    } else if (obj.type === 'rect') {
-      // Output as closed polyline
-      dxf += `0\\nLWPOLYLINE\\n8\\n${layerName}\\n90\\n4\\n70\\n1\\n`;
-      [[obj.x,obj.y],[obj.x+obj.w,obj.y],[obj.x+obj.w,obj.y+obj.h],[obj.x,obj.y+obj.h]].forEach(([x,y])=>{
-        dxf += `10\\n${toReal(x)}\\n20\\n${toRealY(y)}\\n`;
-      });
-      // Add text label for equipment
-      const labMap = {battery_container:'BESS CONTAINER',mv_transformer:'MV TRANSFORMER'};
-      if(labMap[obj.layer]) {
-        dxf += `0\\nTEXT\\n8\\n${layerName}\\n10\\n${toReal(obj.x+obj.w/2)}\\n20\\n${toRealY(obj.y+obj.h/2)}\\n30\\n0\\n40\\n${toReal(8)}\\n1\\n${labMap[obj.layer]}\\n72\\n1\\n11\\n${toReal(obj.x+obj.w/2)}\\n21\\n${toRealY(obj.y+obj.h/2)}\\n`;
-      }
-    } else if (obj.type === 'circle') {
-      dxf += `0\\nCIRCLE\\n8\\n${layerName}\\n10\\n${toReal(obj.cx)}\\n20\\n${toRealY(obj.cy)}\\n40\\n${toReal(obj.r)}\\n`;
-    } else if (obj.type === 'text') {
-      dxf += `0\\nTEXT\\n8\\nANNOTATION\\n10\\n${toReal(obj.x)}\\n20\\n${toRealY(obj.y)}\\n30\\n0\\n40\\n${toReal(10)}\\n1\\n${obj.text}\\n`;
-    } else if (obj.type === 'dim') {
-      const mx = (parseFloat(toReal(obj.x1))+parseFloat(toReal(obj.x2)))/2;
-      const my = (parseFloat(toRealY(obj.y1))+parseFloat(toRealY(obj.y2)))/2;
-      dxf += `0\\nLINE\\n8\\nDIMENSION\\n10\\n${toReal(obj.x1)}\\n20\\n${toRealY(obj.y1)}\\n11\\n${toReal(obj.x2)}\\n21\\n${toRealY(obj.y2)}\\n`;
-      dxf += `0\\nTEXT\\n8\\nDIMENSION\\n10\\n${mx}\\n20\\n${my+3}\\n30\\n0\\n40\\n${toReal(8)}\\n1\\n${obj.value}\\n72\\n1\\n11\\n${mx}\\n21\\n${my+3}\\n`;
+  objs.forEach(obj=>{
+    const ln=obj.lyr.toUpperCase();
+    if(obj.type==='polyline'){
+      dxf+=`0\nLWPOLYLINE\n8\n${ln}\n90\n${obj.pts.length}\n70\n${obj.closed?1:0}\n`;
+      obj.pts.forEach(p=>{dxf+=`10\n${M(p.x)}\n20\n${MY(p.y)}\n`;});
+    } else if(obj.type==='rect'){
+      dxf+=`0\nLWPOLYLINE\n8\n${ln}\n90\n4\n70\n1\n`;
+      [[obj.x,obj.y],[obj.x+obj.w,obj.y],[obj.x+obj.w,obj.y+obj.h],[obj.x,obj.y+obj.h]]
+        .forEach(([x,y])=>{dxf+=`10\n${M(x)}\n20\n${MY(y)}\n`;});
+      const lbmap={battery:'BESS CONTAINER',mv_transformer:'MV TRANSFORMER',pcs:'PCS/INVERTER'};
+      if(lbmap[obj.lyr]) dxf+=`0\nTEXT\n8\n${ln}\n10\n${M(obj.x+obj.w/2)}\n20\n${MY(obj.y+obj.h/2)}\n30\n0\n40\n3\n1\n${lbmap[obj.lyr]}\n72\n1\n11\n${M(obj.x+obj.w/2)}\n21\n${MY(obj.y+obj.h/2)}\n`;
+    } else if(obj.type==='circle'){
+      dxf+=`0\nCIRCLE\n8\n${ln}\n10\n${M(obj.cx)}\n20\n${MY(obj.cy)}\n40\n${M(obj.r)}\n`;
+    } else if(obj.type==='text'){
+      dxf+=`0\nTEXT\n8\nANNOTATION\n10\n${M(obj.x)}\n20\n${MY(obj.y)}\n30\n0\n40\n4\n1\n${obj.text}\n`;
+    } else if(obj.type==='dim'){
+      dxf+=`0\nLINE\n8\nDIMENSION\n10\n${M(obj.x1)}\n20\n${MY(obj.y1)}\n11\n${M(obj.x2)}\n21\n${MY(obj.y2)}\n`;
+      const mx=(parseFloat(M(obj.x1))+parseFloat(M(obj.x2)))/2;
+      const my=(parseFloat(MY(obj.y1))+parseFloat(MY(obj.y2)))/2;
+      dxf+=`0\nTEXT\n8\nDIMENSION\n10\n${mx}\n20\n${my+2}\n30\n0\n40\n3\n1\n${obj.val}\n72\n1\n11\n${mx}\n21\n${my+2}\n`;
     }
   });
+  dxf+='0\nENDSEC\n0\nEOF\n';
 
-  // Title block as DXF text entities
-  const tbData2 = {
-    'PROJECT': document.getElementById('tb-project')?.value||'',
-    'SHEET NAME': document.getElementById('tb-sheet-name')?.value||'',
-    'SHEET NO': document.getElementById('tb-sheet-no')?.value||'',
-    'DRAWN BY': document.getElementById('tb-drwn')?.value||'',
-    'SCALE': scale,
-  };
-  let ty = 5;
-  Object.entries(tbData2).forEach(([k,v]) => {
-    dxf += `0\\nTEXT\\n8\\nTITLEBLOCK\\n10\\n${toReal(SHEET_W-TB_W/2)}\\n20\\n${ty}\\n30\\n0\\n40\\n3\\n1\\n${k}: ${v}\\n72\\n1\\n11\\n${toReal(SHEET_W-TB_W/2)}\\n21\\n${ty}\\n`;
-    ty += 5;
-  });
-
-  dxf += '0\\nENDSEC\\n0\\nEOF\\n';
-
-  const filename = proj.replace(/\\s+/g,'_') + '_SitePlan.dxf';
-  const blob = new Blob([dxf], {type:'application/dxf'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob); a.download = filename; a.click();
-
-  // Also offer DWG note
+  dl(new Blob([dxf],{type:'application/dxf'}), proj.replace(/\s+/g,'_')+'_SitePlan.dxf');
   setTimeout(()=>{
-    if(confirm('DXF exported!\\n\\nTo convert to .DWG format:\\n• Open in AutoCAD → Save As → AutoCAD DWG\\n• Or use free tool: ODA File Converter (opendesign.com)\\n\\nClick OK to open ODA File Converter download page.')) {
+    if(confirm('DXF exported!\n\nTo convert to native .DWG:\n→ Open in AutoCAD and Save As .dwg\n→ Or use free ODA File Converter\n\nOpen ODA download page?'))
       window.open('https://www.opendesign.com/guestfiles/oda_file_converter','_blank');
-    }
-  }, 300);
+  },400);
 }
 
-// ═══════════════════════════════════════════════
-//  EXPORT — PDF with SunStripe template
-// ═══════════════════════════════════════════════
-function exportPDF() {
-  const { jsPDF } = window.jspdf;
+function dl(blob, name){ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click(); }
 
-  // 17"×11" landscape = 432×279mm
-  const doc = new jsPDF({orientation:'landscape', unit:'mm', format:[432,279]});
-  const PW = 432, PH = 279;
+// ─────────────────────────────────────────────
+//  EXPORT — PDF (SunStripe Template)
+// ─────────────────────────────────────────────
+function exportPDF(){
+  const {jsPDF}=window.jspdf;
+  // 17"×11" landscape
+  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:[431.8,279.4]});
+  const PW=431.8, PH=279.4;
+  const scX=PW/SW, scY=PH/SH;
+  const mm=v=>v*scX, mmY=v=>v*scY;
 
-  // Scale factor: SHEET_W SVG units → PW mm
-  const scX = PW / SHEET_W;
-  const scY = PH / SHEET_H;
-
-  function mm(svgX) { return svgX * scX; }
-  function mmY(svgY) { return svgY * scY; }
+  function hexRGB(hex){
+    const v=hex.replace('#','');
+    return[parseInt(v.slice(0,2),16)||0,parseInt(v.slice(2,4),16)||0,parseInt(v.slice(4,6),16)||0];
+  }
 
   // White background
-  doc.setFillColor(255,255,255);
-  doc.rect(0,0,PW,PH,'F');
+  doc.setFillColor(255,255,255); doc.rect(0,0,PW,PH,'F');
 
   // Outer border
-  doc.setDrawColor(0,0,0); doc.setLineWidth(0.4);
-  doc.rect(mm(10),mmY(10),mm(SHEET_W-20),mmY(SHEET_H-20));
+  doc.setDrawColor(0); doc.setLineWidth(.5);
+  doc.rect(mm(12),mmY(12),mm(SW-24),mmY(SH-24));
 
-  // Drawing area border
-  doc.setFillColor(248,249,250);
-  doc.rect(mm(DRAW_X1),mmY(DRAW_Y1),mm(DRAW_W),mmY(DRAW_H),'FD');
+  // Drawing area
+  doc.setFillColor(249,250,251); doc.setLineWidth(.3);
+  doc.rect(mm(DA_X1),mmY(DA_Y1),mm(DA_W),mmY(DA_H),'FD');
 
-  // Copyright line
-  doc.setFontSize(4); doc.setFont('helvetica','bold'); doc.setTextColor(0,0,0);
+  // Copyright
+  doc.setFontSize(3.8); doc.setFont('helvetica','bold'); doc.setTextColor(0);
   doc.text('THIS DRAWING IS THE PROPERTY OF SUNSTRIPE, Inc. ANY REPRODUCTION IN PART OR AS A WHOLE WITHOUT THE WRITTEN PERMISSION OF SUNSTRIPE, Inc IS PROHIBITED.',
-    mm(DRAW_X1+4), mmY(DRAW_Y1-6));
+    mm(DA_X1+4),mmY(DA_Y1-5));
 
   // Bottom note
-  doc.setFontSize(5); doc.setFont('helvetica','bolditalic');
-  doc.text('FOR INFORMATION PURPOSES ONLY - NOT FOR CONSTRUCTION', PW/2, mmY(SHEET_H-MARGIN+10), {align:'center'});
+  doc.setFontSize(5.5); doc.setFont('helvetica','bolditalic');
+  doc.text('FOR INFORMATION PURPOSES ONLY - NOT FOR CONSTRUCTION',PW/2,mmY(SH-MB+14),{align:'center'});
 
-  // ── Title block ─────────────────────────────
-  const TX = TB_X, TY2 = TB_Y, TW = TB_W-6;
-  doc.setFillColor(255,255,255);
-  doc.setDrawColor(0,0,0); doc.setLineWidth(0.3);
-  doc.rect(mm(TX), mmY(TY2), mm(TW), mmY(DRAW_H),'FD');
+  // ── Title Block ──────────────────────────────
+  const TX=TB_X, TW2=TB_TW;
+  let cy=DA_Y1;
 
-  let cy2 = TY2 + 4;
+  doc.setFillColor(255,255,255); doc.setLineWidth(.3);
+  doc.rect(mm(TX),mmY(cy),mm(TW2),mmY(DA_H),'FD');
 
-  // North arrow box
-  const northH = 80;
-  doc.setFillColor(240,240,240);
-  doc.rect(mm(TX),mmY(cy2),mm(TW),mmY(northH),'F');
-  doc.setDrawColor(0); doc.setLineWidth(0.2);
-  doc.rect(mm(TX),mmY(cy2),mm(TW),mmY(northH));
-  // North circle
-  const ncx2 = mm(TX+TW/2), ncy2 = mmY(cy2+northH/2);
-  doc.setDrawColor(0); doc.setLineWidth(0.3);
-  doc.circle(ncx2, ncy2, mm(28));
-  // Arrow (simplified)
+  // North arrow
+  const NAH=90;
+  doc.setFillColor(245,245,245); doc.rect(mm(TX),mmY(cy),mm(TW2),mmY(NAH),'F');
+  const NCX2=mm(TX+TW2/2), NCY2=mmY(cy+NAH/2), NR2=mm(32);
+  doc.setDrawColor(0); doc.setLineWidth(.4);
+  doc.circle(NCX2,NCY2,NR2);
+  // North needle
   doc.setFillColor(0,0,0);
-  doc.triangle(ncx2-mm(8),ncy2+mm(10), ncx2,ncy2-mm(24), ncx2+mm(8),ncy2+mm(10),'F');
-  doc.setFontSize(10); doc.setFont('helvetica','bold');
-  doc.text('N', ncx2, ncy2-mmY(30), {align:'center'});
-  cy2 += northH;
+  doc.triangle(NCX2-mm(9),NCY2+mmY(12),NCX2,NCY2-mmY(NR2-3),NCX2+mm(9),NCY2+mmY(12),'F');
+  doc.setFillColor(255,255,255);
+  doc.triangle(NCX2-mm(9),NCY2+mmY(12),NCX2,NCY2-mmY(NR2-3),NCX2,NCY2+mmY(6),'F');
+  doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(0);
+  doc.text('N',NCX2,NCY2-NR2-2,{align:'center'});
+  cy+=NAH; doc.setDrawColor(0); doc.setLineWidth(.5); doc.line(mm(TX),mmY(cy),mm(TX+TW2),mmY(cy));
 
-  doc.setLineWidth(0.4);
-  doc.line(mm(TX),mmY(cy2),mm(TX+TW),mmY(cy2));
+  // Legends header
+  const LHH=16;
+  doc.setFillColor(232,232,232); doc.rect(mm(TX),mmY(cy),mm(TW2),mmY(LHH),'F');
+  doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(0);
+  doc.text('LEGENDS',mm(TX+TW2/2),mmY(cy+11),{align:'center'});
+  cy+=LHH;
 
-  // Legends
-  const legHeaderH = 14;
-  doc.setFillColor(232,232,232);
-  doc.rect(mm(TX),mmY(cy2),mm(TW),mmY(legHeaderH),'F');
-  doc.setFontSize(5.5); doc.setFont('helvetica','bold'); doc.setTextColor(0);
-  doc.text('LEGENDS', mm(TX+TW/2), mmY(cy2+10), {align:'center'});
-  cy2 += legHeaderH;
-
-  const legendPDF = [
-    ['─────','SITE BOUNDARY','#ff3333'],
-    ['- - -','FENCE','#222'],
-    ['▓▓▓▓','VEGETATION','#558822'],
-    ['≡≡≡≡','WETLANDS','#2266aa'],
-    ['████','STORM WATER POND','#2266aa'],
-    ['////','FIRE BATTERY ACCESS ROAD','#cc7733'],
-    ['████','ACCESS ROAD','#aa9966'],
-    ['⊿⊿⊿','ACCESS GATE','#222'],
-    ['□□□□','BATTERY CONTAINER','#3388cc'],
-    ['□□□□','MV TRANSFORMER','#555577'],
-    ['XXXX','FIRE STAGING AREA','#990000'],
+  const legPDF=[
+    ['sb','SITE BOUNDARY','#ff3333'],['fence','FENCE','#333'],
+    ['veg','VEGETATION','#88cc44'],['wet','WETLANDS','#4499cc'],
+    ['pond','STORM WATER POND','#2266aa'],['fire','FIRE BATTERY ACCESS ROAD','#cc7733'],
+    ['road','ACCESS ROAD','#aa9966'],['gate','ACCESS GATE','#444'],
+    ['batt','BATTERY CONTAINER','#ddeeff'],['mvt','MV TRANSFORMER','#eeeef8'],
+    ['fstg','FIRE STAGING AREA','#dd3333'],
   ];
-  const legRH = 16;
-  legendPDF.forEach(([sym,label,color]) => {
-    doc.setLineWidth(0.2); doc.setDrawColor(200,200,200);
-    doc.rect(mm(TX),mmY(cy2),mm(TW),mmY(legRH));
-    // Color swatch
-    const rgb = hexToRGB(color);
-    doc.setFillColor(rgb.r,rgb.g,rgb.b);
-    doc.rect(mm(TX+2),mmY(cy2+3),mm(14),mmY(legRH-6),'F');
-    doc.setFontSize(5); doc.setFont('helvetica','normal'); doc.setTextColor(0);
-    doc.text(label, mm(TX+18), mmY(cy2+10));
-    cy2 += legRH;
+  const swW=mm(48), swH=mmY(17), lgX=mm(TX+3), lgTX=mm(TX+52);
+  legPDF.forEach(([sym,label,col])=>{
+    doc.setLineWidth(.15); doc.setDrawColor(200,200,200); doc.rect(mm(TX),mmY(cy),mm(TW2),swH);
+    const [r2,g2,b2]=hexRGB(col);
+    doc.setFillColor(r2,g2,b2); doc.setDrawColor(r2,g2,b2); doc.setLineWidth(.8);
+    if(sym==='sb'){doc.setLineWidth(2);doc.line(lgX,mmY(cy)+swH/2,lgX+swW,mmY(cy)+swH/2);}
+    else if(sym==='fence'){doc.setLineDashPattern([2,1.5],0);doc.line(lgX,mmY(cy)+swH/2,lgX+swW,mmY(cy)+swH/2);doc.setLineDashPattern([],0);}
+    else{doc.rect(lgX,mmY(cy)+1,swW,swH-2,'FD');}
+    doc.setFontSize(5.5); doc.setFont('helvetica','normal'); doc.setTextColor(0);
+    doc.text(label,lgTX,mmY(cy)+swH/2+1.5);
+    cy+=17;
   });
-  doc.setLineWidth(0.4);
-  doc.line(mm(TX),mmY(cy2),mm(TX+TW),mmY(cy2));
+  doc.setDrawColor(0); doc.setLineWidth(.5); doc.line(mm(TX),mmY(cy),mm(TX+TW2),mmY(cy));
 
   // Project name
-  const projH2 = 80;
-  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(0);
-  doc.text(document.getElementById('tb-project')?.value||'PROJECT NAME',
-    mm(TX+TW/2), mmY(cy2+28), {align:'center'});
-  doc.setFontSize(9);
-  doc.text((document.getElementById('tb-design-pct')?.value||'30')+'% DESIGN',
-    mm(TX+TW/2), mmY(cy2+44), {align:'center'});
-  doc.setFontSize(6); doc.setFont('helvetica','normal'); doc.setTextColor(80);
-  doc.text(document.getElementById('tb-client')?.value||'CLIENT NAME',
-    mm(TX+TW/2), mmY(cy2+58), {align:'center'});
-  doc.text(document.getElementById('tb-ref')?.value||'REF',
-    mm(TX+TW/2), mmY(cy2+68), {align:'center'});
-  cy2 += projH2;
-  doc.setDrawColor(0); doc.setLineWidth(0.4);
-  doc.line(mm(TX),mmY(cy2),mm(TX+TW),mmY(cy2));
+  const PNH=88;
+  doc.setFontSize(12); doc.setFont('helvetica','bold'); doc.setTextColor(0);
+  doc.text(document.getElementById('f-proj')?.value||'PROJECT NAME',mm(TX+TW2/2),mmY(cy+30),{align:'center'});
+  doc.setFontSize(10);
+  doc.text((document.getElementById('f-pct')?.value||'30')+'% DESIGN',mm(TX+TW2/2),mmY(cy+48),{align:'center'});
+  doc.setFontSize(6.5); doc.setFont('helvetica','normal'); doc.setTextColor(80);
+  doc.text(document.getElementById('f-client')?.value||'CLIENT',mm(TX+TW2/2),mmY(cy+63),{align:'center'});
+  doc.text(document.getElementById('f-ref')?.value||'REF',mm(TX+TW2/2),mmY(cy+75),{align:'center'});
+  cy+=PNH; doc.setDrawColor(0); doc.setLineWidth(.5); doc.line(mm(TX),mmY(cy),mm(TX+TW2),mmY(cy));
 
   // Revision table
-  const revHdr = 12;
-  doc.setFillColor(232,232,232);
-  doc.rect(mm(TX),mmY(cy2),mm(TW),mmY(revHdr+2),'F');
-  doc.setLineWidth(0.2); doc.setDrawColor(150,150,150);
-  doc.setFontSize(5); doc.setFont('helvetica','bold'); doc.setTextColor(0);
-  const revCols2 = [{l:'REV',w:18},{l:'DESCRIPTION',w:TW-96},{l:'BY',w:28},{l:'DATE',w:50}];
-  let rcx = TX;
-  revCols2.forEach(col => {
-    doc.rect(mm(rcx),mmY(cy2),mm(col.w),mmY(revHdr+2));
-    doc.text(col.l, mm(rcx+col.w/2), mmY(cy2+9), {align:'center'});
-    rcx += col.w;
+  const RVHH=14;
+  doc.setFillColor(232,232,232); doc.rect(mm(TX),mmY(cy),mm(TW2),mmY(RVHH),'F');
+  doc.setFontSize(6); doc.setFont('helvetica','bold'); doc.setTextColor(0);
+  const rc3=[{t:'REV',w:22},{t:'DESCRIPTION',w:TW2-100},{t:'BY',w:30},{t:'DATE',w:48}];
+  let rcx3=TX; rc3.forEach(col=>{
+    doc.rect(mm(rcx3),mmY(cy),mm(col.w),mmY(RVHH));
+    doc.text(col.t,mm(rcx3+col.w/2),mmY(cy+10),{align:'center'});
+    rcx3+=col.w;
   });
-  cy2 += revHdr+2;
-  const revRH = 11;
-  revData.forEach((row,ri) => {
-    let rcx2=TX;
-    revCols2.forEach((col,ci) => {
-      doc.setLineWidth(0.15); doc.setDrawColor(200,200,200);
-      doc.rect(mm(rcx2),mmY(cy2),mm(col.w),mmY(revRH));
-      doc.setFontSize(4.5); doc.setFont('helvetica','normal'); doc.setTextColor(0);
-      const vals = [row.rev, row.desc, row.by, row.date];
-      if(vals[ci]) doc.text(vals[ci], mm(rcx2+2), mmY(cy2+7.5));
-      rcx2 += col.w;
+  cy+=RVHH;
+  revData.forEach(row=>{
+    const RVRH=13;
+    let rcx4=TX; rc3.forEach((col,ci)=>{
+      doc.setLineWidth(.15); doc.setDrawColor(200,200,200);
+      doc.rect(mm(rcx4),mmY(cy),mm(col.w),mmY(RVRH));
+      doc.setFontSize(5.5); doc.setFont('helvetica','normal'); doc.setTextColor(0);
+      const vals=[row.rev,row.desc,row.by,row.date];
+      if(vals[ci]) doc.text(vals[ci],mm(rcx4+2),mmY(cy+9));
+      rcx4+=col.w;
     });
-    cy2 += revRH;
+    cy+=13;
   });
-  cy2 += 3;
-  doc.setLineWidth(0.4); doc.setDrawColor(0);
-  doc.line(mm(TX),mmY(cy2),mm(TX+TW),mmY(cy2));
+  cy+=2; doc.setDrawColor(0); doc.setLineWidth(.5); doc.line(mm(TX),mmY(cy),mm(TX+TW2),mmY(cy));
 
-  // SunStripe branding
-  const brandH2 = 46;
-  doc.setFontSize(12); doc.setFont('helvetica','bold'); doc.setTextColor(220,34,0);
-  doc.text('SunStripe', mm(TX+TW/2), mmY(cy2+20), {align:'center'});
-  doc.setFontSize(5.5); doc.setFont('helvetica','normal'); doc.setTextColor(68,68,68);
-  doc.text('Trusted Clean Energy Partners', mm(TX+TW/2), mmY(cy2+30), {align:'center'});
-  doc.text('6363 N State Highway 161, Ste 250 Irving, TX 75038', mm(TX+TW/2), mmY(cy2+40), {align:'center'});
-  cy2 += brandH2;
-  doc.setDrawColor(0); doc.setLineWidth(0.4);
-  doc.line(mm(TX),mmY(cy2),mm(TX+TW),mmY(cy2));
+  // Sunstripe brand
+  const BH=50;
+  doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.setTextColor(221,34,0);
+  doc.text('SunStripe',mm(TX+TW2/2),mmY(cy+22),{align:'center'});
+  doc.setFontSize(5.5); doc.setFont('helvetica','normal'); doc.setTextColor(80);
+  doc.text('Trusted Clean Energy Partners',mm(TX+TW2/2),mmY(cy+33),{align:'center'});
+  doc.text('6363 N State Highway 161, Ste 250 Irving, TX 75038',mm(TX+TW2/2),mmY(cy+43),{align:'center'});
+  cy+=BH; doc.setDrawColor(0); doc.setLineWidth(.5); doc.line(mm(TX),mmY(cy),mm(TX+TW2),mmY(cy));
 
   // Sheet name
-  doc.setFontSize(5); doc.setFont('helvetica','normal'); doc.setTextColor(0);
-  doc.text('SHEET NAME:', mm(TX+3), mmY(cy2+10));
-  doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text(document.getElementById('tb-sheet-name')?.value||'SITE PLAN', mm(TX+TW/2), mmY(cy2+22), {align:'center'});
-  cy2 += 30;
-  doc.setDrawColor(150,150,150); doc.setLineWidth(0.2);
-  doc.line(mm(TX),mmY(cy2),mm(TX+TW),mmY(cy2));
+  doc.setFontSize(5.5); doc.setFont('helvetica','bold'); doc.setTextColor(0);
+  doc.text('SHEET NAME:',mm(TX+3),mmY(cy+11));
+  doc.setFontSize(8);
+  doc.text(document.getElementById('f-sname')?.value||'CIVIL SITE PLAN',mm(TX+TW2/2),mmY(cy+24),{align:'center'});
+  cy+=34; doc.setLineWidth(.3); doc.setDrawColor(180,180,180); doc.line(mm(TX),mmY(cy),mm(TX+TW2),mmY(cy));
 
-  // Lat/Long
-  doc.setFontSize(5); doc.setFont('helvetica','normal'); doc.setTextColor(0);
-  doc.text('LAT/LONG:', mm(TX+3), mmY(cy2+10));
-  doc.text(document.getElementById('tb-latlong')?.value||'XX / -XX', mm(TX+40), mmY(cy2+10));
-  cy2 += 14;
-  doc.line(mm(TX),mmY(cy2),mm(TX+TW),mmY(cy2));
+  // Lat/long
+  doc.setFontSize(5.5); doc.setFont('helvetica','normal'); doc.setTextColor(0);
+  doc.text('LAT/LONG:',mm(TX+3),mmY(cy+11));
+  doc.text(document.getElementById('f-ll')?.value||'XX/XX',mm(TX+52),mmY(cy+11));
+  cy+=17; doc.setLineWidth(.3); doc.line(mm(TX),mmY(cy),mm(TX+TW2),mmY(cy));
 
-  // DRWN/REVW/APPRVD/SIZE
-  const dras = [{l:'DRWN',v:document.getElementById('tb-drwn')?.value||'XX',w:TW*0.22},
-                {l:'REVW',v:document.getElementById('tb-revw')?.value||'XX',w:TW*0.22},
-                {l:'APPRVD',v:document.getElementById('tb-apprvd')?.value||'XX',w:TW*0.28},
-                {l:'SIZE',v:'11"X17"',w:TW*0.28}];
-  let dx=TX;
-  doc.setFontSize(5); doc.setFont('helvetica','bold');
-  dras.forEach(col => {
-    doc.setLineWidth(0.2); doc.rect(mm(dx),mmY(cy2),mm(col.w),mmY(20));
-    doc.text(col.l, mm(dx+col.w/2), mmY(cy2+8), {align:'center'});
-    doc.setFont('helvetica','normal'); doc.setFontSize(5.5);
-    doc.text(col.v, mm(dx+col.w/2), mmY(cy2+16), {align:'center'});
-    doc.setFont('helvetica','bold'); doc.setFontSize(5);
-    dx += col.w;
+  // DRWN row
+  const dc4=[{l:'DRWN',v:document.getElementById('f-drwn')?.value||'XX',w:TW2*.22},
+             {l:'REVW',v:document.getElementById('f-revw')?.value||'XX',w:TW2*.22},
+             {l:'APPRVD',v:document.getElementById('f-apprvd')?.value||'XX',w:TW2*.28},
+             {l:'SIZE',v:'11"X17"',w:TW2*.28}];
+  let dx4=TX;
+  doc.setFontSize(6); doc.setFont('helvetica','bold');
+  dc4.forEach(col=>{
+    doc.setLineWidth(.2); doc.setDrawColor(180,180,180); doc.rect(mm(dx4),mmY(cy),mm(col.w),mmY(22));
+    doc.text(col.l,mm(dx4+col.w/2),mmY(cy+9),{align:'center'});
+    doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+    doc.text(col.v,mm(dx4+col.w/2),mmY(cy+18),{align:'center'});
+    doc.setFont('helvetica','bold'); doc.setFontSize(6);
+    dx4+=col.w;
   });
-  cy2 += 20;
-  doc.setLineWidth(0.4); doc.setDrawColor(0);
-  doc.line(mm(TX),mmY(cy2),mm(TX+TW),mmY(cy2));
+  cy+=22; doc.setDrawColor(0); doc.setLineWidth(.5); doc.line(mm(TX),mmY(cy),mm(TX+TW2),mmY(cy));
 
   // Sheet No
-  doc.setFontSize(5); doc.setFont('helvetica','normal'); doc.setTextColor(0);
-  doc.text('SHEET:', mm(TX+3), mmY(cy2+10));
-  doc.setFontSize(14); doc.setFont('helvetica','bold');
-  const snBottom = mmY(TY2 + DRAW_H - 8);
-  doc.text(document.getElementById('tb-sheet-no')?.value||'C-001', mm(TX+TW/2), snBottom, {align:'center'});
+  doc.setFontSize(5.5); doc.setFont('helvetica','normal'); doc.setTextColor(0);
+  doc.text('SHEET:',mm(TX+3),mmY(cy+11));
+  doc.setFontSize(16); doc.setFont('helvetica','bold');
+  doc.text(document.getElementById('f-sno')?.value||'S-01',mm(TX+TW2/2),mmY(DA_Y1+DA_H-10),{align:'center'});
 
-  // ── Draw objects onto PDF ─────────────────────
-  objects.forEach(obj => {
-    const ld = LAYERS[obj.layer] || LAYERS.site_boundary;
-    const rgb = hexToRGB(ld.color);
-    const frgb = ld.fill && ld.fill!=='none' ? hexToRGB(ld.fill) : null;
-    doc.setDrawColor(rgb.r,rgb.g,rgb.b);
-    doc.setLineWidth(ld.lw*0.3);
+  // ── Scale bar in PDF ──────────────────────────
+  const sbX2=mm(DA_X1+20), sbY2=mmY(DA_Y2-28);
+  const scT=document.getElementById('f-scale')?.value||'1:1000';
+  doc.setFontSize(6); doc.setFont('helvetica','bold'); doc.setTextColor(0);
+  doc.text('SCALE  '+scT, sbX2, sbY2-2);
+  for(let i=0;i<5;i++){
+    doc.setFillColor(i%2===0?0:255,i%2===0?0:255,i%2===0?0:255);
+    doc.rect(sbX2+mm(i*30),sbY2,mm(30),mmY(9),'FD');
+  }
+  ['0m','30m','60m','90m','120m','150m'].forEach((l,i)=>{
+    doc.setFontSize(5); doc.setFont('helvetica','normal');
+    doc.text(l,sbX2+mm(i*30),sbY2+mmY(17),{align:'center'});
+  });
 
-    if (obj.type === 'polyline') {
-      if (frgb) {
-        doc.setFillColor(frgb.r,frgb.g,frgb.b);
+  // ── Draw objects ──────────────────────────────
+  objs.forEach(obj=>{
+    const ld2=LD[obj.lyr]||LD.site_boundary;
+    const [sr,sg,sb2]=hexRGB(ld2.c);
+    doc.setDrawColor(sr,sg,sb2); doc.setLineWidth(ld2.lw*0.28);
+    if(ld2.fill&&ld2.fill!=='none'){
+      const [fr,fg,fb]=hexRGB(ld2.fill);
+      doc.setFillColor(fr,fg,fb);
+    }
+    if(obj.type==='polyline'){
+      if(obj.pts.length<2)return;
+      for(let i=0;i<obj.pts.length-1;i++)
+        doc.line(mm(obj.pts[i].x),mmY(obj.pts[i].y),mm(obj.pts[i+1].x),mmY(obj.pts[i+1].y));
+      if(obj.closed) doc.line(mm(obj.pts[obj.pts.length-1].x),mmY(obj.pts[obj.pts.length-1].y),mm(obj.pts[0].x),mmY(obj.pts[0].y));
+    } else if(obj.type==='rect'){
+      if(ld2.fill&&ld2.fill!=='none') doc.rect(mm(obj.x),mmY(obj.y),mm(obj.w),mmY(obj.h),'FD');
+      else doc.rect(mm(obj.x),mmY(obj.y),mm(obj.w),mmY(obj.h));
+      const lbm={battery:'BESS',mv_transformer:'MVT',pcs:'PCS'};
+      if(lbm[obj.lyr]){
+        doc.setFontSize(5); doc.setFont('helvetica','bold'); doc.setTextColor(sr,sg,sb2);
+        doc.text(lbm[obj.lyr],mm(obj.x+obj.w/2),mmY(obj.y+obj.h/2+1.5),{align:'center'});
       }
-      const pts = obj.points;
-      if (pts.length < 2) return;
-      for (let i=0; i<pts.length-1; i++) {
-        doc.line(mm(pts[i].x),mmY(pts[i].y),mm(pts[i+1].x),mmY(pts[i+1].y));
-      }
-      if (obj.closed && pts.length > 1) {
-        doc.line(mm(pts[pts.length-1].x),mmY(pts[pts.length-1].y),mm(pts[0].x),mmY(pts[0].y));
-      }
-    } else if (obj.type === 'rect') {
-      if (frgb) {
-        doc.setFillColor(frgb.r,frgb.g,frgb.b);
-        doc.rect(mm(obj.x),mmY(obj.y),mm(obj.w),mmY(obj.h),'FD');
-      } else {
-        doc.rect(mm(obj.x),mmY(obj.y),mm(obj.w),mmY(obj.h));
-      }
-      const labMap = {battery_container:'BESS',mv_transformer:'MVT'};
-      if(labMap[obj.layer]) {
-        doc.setFontSize(5); doc.setFont('helvetica','bold'); doc.setTextColor(rgb.r,rgb.g,rgb.b);
-        doc.text(labMap[obj.layer], mm(obj.x+obj.w/2), mmY(obj.y+obj.h/2+2), {align:'center'});
-      }
-    } else if (obj.type === 'circle') {
+    } else if(obj.type==='circle'){
       doc.circle(mm(obj.cx),mmY(obj.cy),mm(obj.r));
-    } else if (obj.type === 'text') {
-      doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(0);
-      doc.text(obj.text, mm(obj.x), mmY(obj.y));
-    } else if (obj.type === 'dim') {
-      doc.setDrawColor(204,153,0); doc.setLineWidth(0.2);
+    } else if(obj.type==='text'){
+      doc.setFontSize(6); doc.setFont('helvetica','normal'); doc.setTextColor(0);
+      doc.text(obj.text,mm(obj.x),mmY(obj.y));
+    } else if(obj.type==='dim'){
+      doc.setDrawColor(221,170,0); doc.setLineWidth(.25);
       doc.line(mm(obj.x1),mmY(obj.y1),mm(obj.x2),mmY(obj.y2));
-      doc.setFontSize(5); doc.setTextColor(180,130,0);
-      doc.text(obj.value, mm((obj.x1+obj.x2)/2), mmY((obj.y1+obj.y2)/2)-1.5, {align:'center'});
+      doc.setFontSize(5.5); doc.setTextColor(170,120,0);
+      doc.text(obj.val,mm((obj.x1+obj.x2)/2),mmY((obj.y1+obj.y2)/2)-1.5,{align:'center'});
     }
   });
 
-  // Scale bar
-  doc.setDrawColor(0); doc.setFillColor(0);
-  doc.setFontSize(5); doc.setFont('helvetica','normal'); doc.setTextColor(0);
-  const sbX2 = mm(DRAW_X1+20), sbY2 = mmY(DRAW_Y2-20);
-  doc.text('SCALE '+( document.getElementById('tb-scale')?.value||'1:1000'), sbX2, sbY2-1);
-  [0,1,2,3,4].forEach(i => {
-    doc.setFillColor(i%2===0?0:255,i%2===0?0:255,i%2===0?0:255);
-    doc.rect(sbX2+i*mm(30),sbY2,mm(30),mmY(8),'FD');
-  });
-  doc.setTextColor(0);
-  ['0','30','60','90','120m'].forEach((l,i)=>doc.text(l,sbX2+i*mm(30),sbY2+mmY(14),{align:'center'}));
-
-  const filename = (document.getElementById('tb-project')?.value||'BESS_Site').replace(/\\s+/g,'_') + '_SitePlan.pdf';
-  doc.save(filename);
+  const fname=(document.getElementById('f-proj')?.value||'BESS_Site').replace(/\s+/g,'_')+'_SitePlan.pdf';
+  doc.save(fname);
 }
 
-function hexToRGB(hex) {
-  const r = parseInt(hex.slice(1,3),16)||0;
-  const g = parseInt(hex.slice(3,5),16)||0;
-  const b = parseInt(hex.slice(5,7),16)||0;
-  return {r,g,b};
-}
-
-// ═══════════════════════════════════════════════
-//  INITIALISE
-// ═══════════════════════════════════════════════
-window.addEventListener('load', () => {
-  initSVG();
-  setActiveLayer('site_boundary');
-  zoomFit();
-
-  // Set initial active palette item
-  document.getElementById('pal-site_boundary').classList.add('active-layer');
-});
 </script>
 </body>
 </html>
